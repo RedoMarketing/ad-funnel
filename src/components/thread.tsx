@@ -191,7 +191,9 @@ function CampaignRow({
 
   return (
     <>
-      <Card className="group hover:border-ring/60 gap-0 px-3.5 py-3 transition-colors">
+      {/* No shadow: these sit inside a collapsible whose overflow-hidden (needed
+          for the height animation) would clip it. The border carries the edge. */}
+      <Card className="group hover:border-ring/60 gap-0 px-3.5 py-3 shadow-none transition-colors">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
