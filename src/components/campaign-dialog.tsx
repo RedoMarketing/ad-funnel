@@ -34,6 +34,31 @@ import {
 
 const NEW_PLATFORM = "__new__";
 
+/**
+ * Guarantees Shift+Enter inserts a line break in a controlled textarea.
+ *
+ * A bare <textarea> does this natively, but the dialog sits inside a focus
+ * trap and a form, so this makes the behaviour explicit rather than relying
+ * on nothing upstream swallowing the key.
+ */
+function insertLineBreak(
+  e: React.KeyboardEvent<HTMLTextAreaElement>,
+  setValue: (v: string) => void,
+) {
+  if (e.key !== "Enter" || !e.shiftKey) return;
+  e.preventDefault();
+
+  const el = e.currentTarget;
+  const start = el.selectionStart ?? el.value.length;
+  const end = el.selectionEnd ?? start;
+  setValue(el.value.slice(0, start) + "\n" + el.value.slice(end));
+
+  // React rewrites value on the next paint; put the caret after the break.
+  requestAnimationFrame(() => {
+    el.selectionStart = el.selectionEnd = start + 1;
+  });
+}
+
 export function CampaignDialog({
   open,
   onOpenChange,
@@ -258,6 +283,7 @@ export function CampaignDialog({
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
+                onKeyDown={(e) => insertLineBreak(e, setNotes)}
                 placeholder="Creative angle, offer, anything worth remembering"
               />
             </div>
