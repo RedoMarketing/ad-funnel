@@ -177,10 +177,12 @@ function CampaignRow({
   campaign,
   productName,
   productId,
+  index = 0,
 }: {
   campaign: Campaign;
   productName: string;
   productId: string;
+  index?: number;
 }) {
   const { removeCampaign } = useStore();
   const [editing, setEditing] = React.useState(false);
@@ -194,7 +196,10 @@ function CampaignRow({
     <>
       {/* No shadow: these sit inside a collapsible whose overflow-hidden (needed
           for the height animation) would clip it. The border carries the edge. */}
-      <Card className="group hover:border-ring/60 gap-0 px-3.5 py-3 shadow-none transition-colors">
+      <Card
+        className="group hover:border-ring/60 gap-0 px-3.5 py-3 shadow-none transition-colors"
+        style={{ "--i": index } as React.CSSProperties}
+      >
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -351,9 +356,10 @@ function PlatformGroup({
 
         <CollapsibleContent className={COLLAPSE_ANIM}>
           <div className={cn(RAIL, "mt-2 space-y-2")}>
-            {campaigns.map((campaign) => (
+            {campaigns.map((campaign, i) => (
               <CampaignRow
                 key={campaign.id}
+                index={i}
                 campaign={campaign}
                 productId={product.id}
                 productName={product.name}
@@ -383,11 +389,14 @@ export function ProductThread({
   product,
   campaigns,
   byPlatform,
+  index = 0,
 }: {
   cloud: Cloud;
   product: Product;
   campaigns: Campaign[];
   byPlatform: { platform: Platform; campaigns: Campaign[] }[];
+  /** Position in the list, used to stagger the entrance. */
+  index?: number;
 }) {
   const { removeProduct } = useStore();
   // Collapsed by default: a cloud page should open as a scannable list of
@@ -400,7 +409,7 @@ export function ProductThread({
 
   return (
     <>
-      <Card className="thread-in gap-0 px-4 py-4 sm:px-5">
+      <Card className="thread-in gap-0 px-4 py-4 sm:px-5" style={{ "--i": index } as React.CSSProperties}>
         <Collapsible
           open={open}
           onOpenChange={(v) => {

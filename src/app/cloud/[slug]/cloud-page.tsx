@@ -110,9 +110,10 @@ export function CloudPageClient({ slug }: { slug: string }) {
             </CardContent>
           </Card>
         ) : (
-          thread.map(({ product, campaigns, byPlatform }) => (
+          thread.map(({ product, campaigns, byPlatform }, i) => (
             <ProductThread
               key={product.id}
+              index={i}
               cloud={cloud}
               product={product}
               campaigns={campaigns}

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function CloudCard({ cloud }: { cloud: Cloud }) {
+function CloudCard({ cloud, index }: { cloud: Cloud; index: number }) {
   const { data } = useStore();
 
   const products = data.products.filter((p) => p.cloudId === cloud.id);
@@ -31,7 +32,11 @@ function CloudCard({ cloud }: { cloud: Cloud }) {
   ];
 
   return (
-    <Link href={`/cloud/${cloud.slug}`} className="group">
+    <Link
+      href={`/cloud/${cloud.slug}`}
+      className="group thread-in block"
+      style={{ "--i": index } as React.CSSProperties}
+    >
       <Card className="hover:border-ring/60 h-full transition-colors">
         <CardHeader>
           <CardTitle>{cloud.name}</CardTitle>
@@ -95,7 +100,9 @@ export default function Home() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {!ready
             ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44 w-full rounded-xl" />)
-            : data.clouds.map((cloud) => <CloudCard key={cloud.id} cloud={cloud} />)}
+            : data.clouds.map((cloud, i) => (
+                <CloudCard key={cloud.id} cloud={cloud} index={i} />
+              ))}
         </div>
       )}
     </div>
