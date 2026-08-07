@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth";
+import { AuthGate } from "@/components/auth-gate";
 import { StoreProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
@@ -27,11 +29,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background">
-        <StoreProvider>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
+        <AuthProvider>
+          <AuthGate>
+            <StoreProvider>
+              <SiteHeader />
+              <main className="flex-1">{children}</main>
+            </StoreProvider>
+          </AuthGate>
           <Toaster position="bottom-right" />
-        </StoreProvider>
+        </AuthProvider>
       </body>
     </html>
   );

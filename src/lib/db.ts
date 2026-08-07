@@ -8,11 +8,18 @@ const SUPABASE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
   "sb_publishable_rptD8XEPS6N1GWIDl6yJzg_QPoKTFzH";
 
-const client = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false },
+// persistSession keeps you signed in per device; autoRefreshToken renews the
+// access token in the background so a long-lived tab doesn't silently expire.
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+    storageKey: "ad-funnel-auth",
+  },
 });
 
-const supabaseAdmin = () => client;
+const supabaseAdmin = () => supabase;
 import type {
   AdSet,
   AdSetInput,

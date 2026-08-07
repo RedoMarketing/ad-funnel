@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Download, Layers, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react";
+import { Download, Layers, LogOut, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 import { clearFunnelData } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,7 @@ import { ManagePlatformsDialog } from "@/components/manage-platforms-dialog";
 
 export function DataMenu() {
   const { exportJson, refresh, data } = useStore();
+  const { email, signOut } = useAuth();
   const [confirmClear, setConfirmClear] = React.useState(false);
   const [platformsOpen, setPlatformsOpen] = React.useState(false);
 
@@ -70,6 +72,14 @@ export function DataMenu() {
           <DropdownMenuItem onSelect={handleExport}>
             <Download />
             Export snapshot
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {email && (
+            <div className="text-muted-foreground truncate px-2 py-1.5 text-xs">{email}</div>
+          )}
+          <DropdownMenuItem onSelect={() => void signOut()}>
+            <LogOut />
+            Sign out
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmClear(true)}>
