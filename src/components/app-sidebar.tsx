@@ -67,13 +67,14 @@ export function AppSidebar() {
                       >
                         <Link href={href} onClick={haptic}>
                           {/*
-                            Sized like an icon so the collapsed rail shows a
-                            clean initial. Without a leading element the label
-                            is what gets clipped, which renders as "B…".
+                            Stands in for an icon on the collapsed rail only.
+                            Without a leading element the label is what gets
+                            clipped there, rendering as "B…"; expanded, the
+                            full name says it already.
                           */}
                           <span
                             aria-hidden
-                            className="flex size-4 shrink-0 items-center justify-center text-[11px] font-semibold"
+                            className="hidden size-4 shrink-0 items-center justify-center text-[11px] font-semibold group-data-[collapsible=icon]:flex"
                           >
                             {cloud.name.charAt(0)}
                           </span>
