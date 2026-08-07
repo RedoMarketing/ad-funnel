@@ -1,15 +1,11 @@
+import { CLOUD_SLUGS } from "@/lib/clouds";
 import { CloudPageClient } from "./cloud-page";
 
-// Static export: the four clouds are fixed, so every route is prerendered.
+// Static export: every cloud route is prerendered from the shared slug list.
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return [
-    { slug: "shipping" },
-    { slug: "marketing" },
-    { slug: "conversion" },
-    { slug: "reverse-logistics" },
-  ];
+  return CLOUD_SLUGS.map((slug) => ({ slug }));
 }
 
 export default async function CloudPage({ params }: PageProps<"/cloud/[slug]">) {
