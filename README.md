@@ -47,9 +47,35 @@ This matters because the project is shared. Its publishable key ships in the bra
 
 Verified: that key returns zero rows on `funnel_products` and gets `42501 row-level security policy` on an insert.
 
-## Deploying with a password
+## Viewing it as a GitHub link (Codespaces)
 
-`src/proxy.ts` gates the site behind HTTP Basic auth. Next 16 renamed the `middleware` convention to `proxy`.
+GitHub Pages cannot host this: it is static-only, and the app needs a server to
+hold the Supabase secret key. A static build would put a database key in the
+browser and could not enforce a password.
+
+Codespaces can, and the forwarded URL is private to your GitHub account:
+
+1. Add the secret once: repo **Settings → Secrets and variables → Codespaces →
+   New secret**, named `SUPABASE_SECRET_KEY`.
+2. On the repo page, **Code → Codespaces → Create codespace on main**.
+3. It installs and starts the dev server on its own. Open the forwarded port 3000
+   link (the **Ports** tab, or the popup).
+
+The URL looks like `https://<name>-3000.app.github.dev` and returns 404 for
+anyone not signed in as you, so GitHub auth is the password. `.devcontainer/`
+sets port 3000 to `private` visibility to keep it that way.
+
+**Caveat:** a codespace is not always-on. It suspends after about 30 minutes idle
+and the link goes dead until you reopen it. Fine for checking your own data, not
+for sharing a live dashboard. Free personal accounts get 120 core-hours a month.
+
+## Deploying somewhere always-on
+
+Any host that runs a Node server works (Netlify, Cloudflare Pages, Render,
+Railway, Fly). All of them need an interactive login, so this step is manual.
+
+`src/proxy.ts` gates the site behind HTTP Basic auth. Next 16 renamed the
+`middleware` convention to `proxy`.
 
 | Variable | Required | Default |
 | --- | --- | --- |
@@ -58,15 +84,9 @@ Verified: that key returns zero rows on `funnel_products` and gets `42501 row-le
 | `SITE_PASSWORD` | enables the gate | none |
 | `SITE_USER` | no | `redo` |
 
-**With `SITE_PASSWORD` unset the gate is off.** That keeps local dev frictionless and stops a misconfigured deploy from locking you out, so confirm it's set on the host.
-
-To deploy on Vercel's free tier:
-
-1. Import `RedoMarketing/ad-funnel` at https://vercel.com/new
-2. Add all four environment variables
-3. Deploy
-
-The browser prompts once per session for username `redo` and your password.
+**With `SITE_PASSWORD` unset the gate is off.** That keeps local dev frictionless
+and stops a misconfigured deploy from locking you out, so confirm it is set on
+the host.
 
 ## Stack
 

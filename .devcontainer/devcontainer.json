@@ -1,0 +1,37 @@
+{
+  "name": "Ad Funnel Tracker",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+
+  "postCreateCommand": "npm install",
+  "postAttachCommand": {
+    "dev": "npm run dev"
+  },
+
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Ad Funnel",
+      "onAutoForward": "openBrowser",
+      // Private: the forwarded URL is reachable only by your GitHub account.
+      // GitHub auth is the gate here, so SITE_PASSWORD is not needed.
+      "visibility": "private"
+    }
+  },
+
+  // Not a secret, so it can live in the repo. SUPABASE_SECRET_KEY must come
+  // from a Codespaces secret instead: repo Settings > Secrets and variables >
+  // Codespaces. It is injected into the environment automatically.
+  "containerEnv": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://jjezreqahluvohgxpoma.supabase.co"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  }
+}
