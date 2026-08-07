@@ -39,7 +39,6 @@ type CampaignRow = {
   stage: Campaign["stage"];
   status: Campaign["status"];
   objective: string | null;
-  audience: string | null;
   budget: string | null;
   landing_url: string | null;
   notes: string | null;
@@ -94,7 +93,6 @@ const toCampaign = (r: CampaignRow): Campaign => ({
   stage: r.stage,
   status: r.status,
   objective: r.objective ?? undefined,
-  audience: r.audience ?? undefined,
   budget: r.budget ?? undefined,
   landingUrl: r.landing_url ?? undefined,
   notes: r.notes ?? undefined,
@@ -114,7 +112,6 @@ const campaignColumns = (input: CampaignInput) => ({
   stage: input.stage,
   status: input.status,
   objective: orNull(input.objective),
-  audience: orNull(input.audience),
   budget: orNull(input.budget),
   landing_url: orNull(input.landingUrl),
   notes: orNull(input.notes),

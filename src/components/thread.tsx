@@ -185,7 +185,6 @@ function CampaignRow({
   const meta = [
     campaign.objective && { label: "Objective", value: campaign.objective },
     campaign.budget && { label: "Budget", value: campaign.budget },
-    campaign.audience && { label: "Audience", value: campaign.audience },
   ].filter(Boolean) as { label: string; value: string }[];
 
   return (

@@ -31,7 +31,6 @@ export interface Campaign {
   stage: FunnelStage;
   status: CampaignStatus;
   objective?: string;
-  audience?: string;
   budget?: string;
   landingUrl?: string;
   notes?: string;
@@ -79,7 +78,6 @@ export interface CampaignInput {
   stage: FunnelStage;
   status: CampaignStatus;
   objective?: string;
-  audience?: string;
   budget?: string;
   landingUrl?: string;
   notes?: string;

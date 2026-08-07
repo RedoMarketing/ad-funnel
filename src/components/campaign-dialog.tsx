@@ -58,7 +58,6 @@ export function CampaignDialog({
   const [stage, setStage] = React.useState<FunnelStage>("awareness");
   const [status, setStatus] = React.useState<CampaignStatus>("active");
   const [objective, setObjective] = React.useState("");
-  const [audience, setAudience] = React.useState("");
   const [budget, setBudget] = React.useState("");
   const [landingUrl, setLandingUrl] = React.useState("");
   const [notes, setNotes] = React.useState("");
@@ -72,7 +71,6 @@ export function CampaignDialog({
     setStage(campaign?.stage ?? "awareness");
     setStatus(campaign?.status ?? "active");
     setObjective(campaign?.objective ?? "");
-    setAudience(campaign?.audience ?? "");
     setBudget(campaign?.budget ?? "");
     setLandingUrl(campaign?.landingUrl ?? "");
     setNotes(campaign?.notes ?? "");
@@ -108,7 +106,6 @@ export function CampaignDialog({
         stage,
         status,
         objective: objective.trim() || undefined,
-        audience: audience.trim() || undefined,
         budget: budget.trim() || undefined,
         landingUrl: landingUrl.trim() || undefined,
         notes: notes.trim() || undefined,
@@ -239,17 +236,6 @@ export function CampaignDialog({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="campaign-audience">
-                Audience <span className="text-muted-foreground">(optional)</span>
-              </Label>
-              <Input
-                id="campaign-audience"
-                value={audience}
-                onChange={(e) => setAudience(e.target.value)}
-                placeholder="Shopify merchants, 1k+ orders/mo"
-              />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="campaign-url">
