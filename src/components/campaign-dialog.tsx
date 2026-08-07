@@ -11,6 +11,7 @@ import {
   type CampaignStatus,
   type FunnelStage,
 } from "@/lib/types";
+import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,30 +35,6 @@ import {
 
 const NEW_PLATFORM = "__new__";
 
-/**
- * Guarantees Shift+Enter inserts a line break in a controlled textarea.
- *
- * A bare <textarea> does this natively, but the dialog sits inside a focus
- * trap and a form, so this makes the behaviour explicit rather than relying
- * on nothing upstream swallowing the key.
- */
-function insertLineBreak(
-  e: React.KeyboardEvent<HTMLTextAreaElement>,
-  setValue: (v: string) => void,
-) {
-  if (e.key !== "Enter" || !e.shiftKey) return;
-  e.preventDefault();
-
-  const el = e.currentTarget;
-  const start = el.selectionStart ?? el.value.length;
-  const end = el.selectionEnd ?? start;
-  setValue(el.value.slice(0, start) + "\n" + el.value.slice(end));
-
-  // React rewrites value on the next paint; put the caret after the break.
-  requestAnimationFrame(() => {
-    el.selectionStart = el.selectionEnd = start + 1;
-  });
-}
 
 export function CampaignDialog({
   open,
@@ -154,7 +131,7 @@ export function CampaignDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[88vh] overflow-y-auto">
-        <form onSubmit={submit}>
+        <form onSubmit={submit} onKeyDown={dialogKeyDown}>
           <DialogHeader>
             <DialogTitle>{campaign ? "Edit campaign" : "New campaign"}</DialogTitle>
             <DialogDescription>
@@ -283,7 +260,6 @@ export function CampaignDialog({
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                onKeyDown={(e) => insertLineBreak(e, setNotes)}
                 placeholder="Creative angle, offer, anything worth remembering"
               />
             </div>

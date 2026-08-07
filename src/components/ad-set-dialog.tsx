@@ -4,6 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { CAMPAIGN_STATUSES, type AdSet, type CampaignStatus } from "@/lib/types";
+import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +86,7 @@ export function AdSetDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={submit}>
+        <form onSubmit={submit} onKeyDown={dialogKeyDown}>
           <DialogHeader>
             <DialogTitle>{adSet ? "Edit ad set" : "New ad set"}</DialogTitle>
             <DialogDescription>
