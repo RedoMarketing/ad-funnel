@@ -6,6 +6,9 @@ import { AuthGate } from "@/components/auth-gate";
 import { StoreProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
+import { AppSidebar } from "@/components/app-sidebar";
+import { DataMenu } from "@/components/data-menu";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { IOS_SWITCH_ID } from "@/lib/haptics";
 
 const geistSans = Geist({
@@ -62,8 +65,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AuthProvider>
           <AuthGate>
             <StoreProvider>
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  {/* Mobile: the existing top nav. Desktop: the sidebar plus this thin bar. */}
+                  <SiteHeader />
+                  <div className="bg-background/85 sticky top-0 z-30 hidden h-12 items-center gap-2 border-b px-4 backdrop-blur-md md:flex">
+                    <SidebarTrigger />
+                    <div className="flex-1" />
+                    <DataMenu />
+                  </div>
+                  <main className="flex-1">{children}</main>
+                </SidebarInset>
+              </SidebarProvider>
             </StoreProvider>
           </AuthGate>
           <Toaster position="bottom-right" />

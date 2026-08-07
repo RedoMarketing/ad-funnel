@@ -13,7 +13,7 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
+    <header className="bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md md:hidden">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4 sm:px-6">
         <Button
           asChild
