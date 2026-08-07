@@ -4,7 +4,7 @@ import * as React from "react";
 import { Download, Layers, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
-import { clearFunnelData } from "@/lib/actions";
+import { clearFunnelData } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

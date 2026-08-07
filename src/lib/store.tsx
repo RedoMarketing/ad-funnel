@@ -11,7 +11,7 @@ import {
   editCampaign,
   fetchFunnel,
   renameProduct,
-} from "./actions";
+} from "./db";
 import { EMPTY_FUNNEL, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product } from "./types";
 
 interface StoreValue {

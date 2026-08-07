@@ -1,6 +1,18 @@
-"use server";
+import { createClient } from "@supabase/supabase-js";
 
-import { supabaseAdmin } from "./supabase";
+// Publishable key: public by design (same model as the brand book app).
+// RLS policies on the funnel_* tables define what it can do.
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://jjezreqahluvohgxpoma.supabase.co";
+const SUPABASE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  "sb_publishable_rptD8XEPS6N1GWIDl6yJzg_QPoKTFzH";
+
+const client = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+const supabaseAdmin = () => client;
 import type {
   Campaign,
   CampaignInput,
