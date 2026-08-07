@@ -23,8 +23,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm i -g npm@11
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npm run build
         env:
           PAGES_BASE_PATH: /ad-funnel
