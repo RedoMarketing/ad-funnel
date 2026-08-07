@@ -19,7 +19,6 @@ import {
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 
 export function AppSidebar() {
@@ -29,7 +28,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="h-12 justify-center border-b">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={pathname === "/"} tooltip="All clouds">
@@ -41,8 +40,6 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarSeparator />
 
       <SidebarContent>
         <SidebarGroup>
@@ -69,6 +66,17 @@ export function AppSidebar() {
                         tooltip={cloud.name}
                       >
                         <Link href={href} onClick={haptic}>
+                          {/*
+                            Sized like an icon so the collapsed rail shows a
+                            clean initial. Without a leading element the label
+                            is what gets clipped, which renders as "B…".
+                          */}
+                          <span
+                            aria-hidden
+                            className="flex size-4 shrink-0 items-center justify-center text-[11px] font-semibold"
+                          >
+                            {cloud.name.charAt(0)}
+                          </span>
                           <span>{cloud.name}</span>
                         </Link>
                       </SidebarMenuButton>
