@@ -14,6 +14,8 @@ const client = createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 const supabaseAdmin = () => client;
 import type {
+  AdSet,
+  AdSetInput,
   Campaign,
   CampaignInput,
   Cloud,
@@ -64,6 +66,26 @@ const toPlatform = (r: PlatformRow): Platform => ({
   createdAt: r.created_at,
 });
 
+type AdSetRow = {
+  id: string;
+  campaign_id: string;
+  name: string;
+  audience: string | null;
+  budget: string | null;
+  status: AdSet["status"];
+  created_at: string;
+};
+
+const toAdSet = (r: AdSetRow): AdSet => ({
+  id: r.id,
+  campaignId: r.campaign_id,
+  name: r.name,
+  audience: r.audience ?? undefined,
+  budget: r.budget ?? undefined,
+  status: r.status,
+  createdAt: r.created_at,
+});
+
 const toCampaign = (r: CampaignRow): Campaign => ({
   id: r.id,
   productId: r.product_id,
@@ -105,14 +127,15 @@ const campaignColumns = (input: CampaignInput) => ({
 export async function fetchFunnel(): Promise<FunnelData> {
   const db = supabaseAdmin();
 
-  const [clouds, products, platforms, campaigns] = await Promise.all([
+  const [clouds, products, platforms, campaigns, adSets] = await Promise.all([
     db.from("funnel_clouds").select("*").order("sort_order"),
     db.from("funnel_products").select("*").order("created_at"),
     db.from("funnel_platforms").select("*").order("name"),
     db.from("funnel_campaigns").select("*").order("created_at"),
+    db.from("funnel_ad_sets").select("*").order("created_at"),
   ]);
 
-  const failed = [clouds, products, platforms, campaigns].find((r) => r.error);
+  const failed = [clouds, products, platforms, campaigns, adSets].find((r) => r.error);
   if (failed?.error) throw new Error(failed.error.message);
 
   return {
@@ -120,6 +143,7 @@ export async function fetchFunnel(): Promise<FunnelData> {
     products: (products.data as ProductRow[]).map(toProduct),
     platforms: (platforms.data as PlatformRow[]).map(toPlatform),
     campaigns: (campaigns.data as CampaignRow[]).map(toCampaign),
+    adSets: (adSets.data as AdSetRow[]).map(toAdSet),
   };
 }
 
@@ -227,5 +251,43 @@ export async function clearFunnelData(): Promise<void> {
   const db = supabaseAdmin();
   // Supabase requires a filter on delete; every uuid is non-null.
   const { error } = await db.from("funnel_products").delete().not("id", "is", null);
+  if (error) throw new Error(error.message);
+}
+
+/* ---------------------------------------------------------------- */
+/* ad sets                                                           */
+/* ---------------------------------------------------------------- */
+
+const adSetColumns = (input: AdSetInput) => ({
+  campaign_id: input.campaignId,
+  name: input.name.trim(),
+  audience: orNull(input.audience),
+  budget: orNull(input.budget),
+  status: input.status,
+});
+
+export async function createAdSet(input: AdSetInput): Promise<AdSet> {
+  const { data, error } = await supabaseAdmin()
+    .from("funnel_ad_sets")
+    .insert(adSetColumns(input))
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return toAdSet(data as AdSetRow);
+}
+
+export async function editAdSet(id: string, input: AdSetInput): Promise<AdSet> {
+  const { data, error } = await supabaseAdmin()
+    .from("funnel_ad_sets")
+    .update(adSetColumns(input))
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return toAdSet(data as AdSetRow);
+}
+
+export async function deleteAdSet(id: string): Promise<void> {
+  const { error } = await supabaseAdmin().from("funnel_ad_sets").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }

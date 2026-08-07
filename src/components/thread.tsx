@@ -16,6 +16,7 @@ import {
   FUNNEL_STAGES,
   STATUS_CLASS,
   STATUS_VARIANT,
+  type AdSet,
   type Campaign,
   type Cloud,
   type Platform,
@@ -37,6 +38,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AdSetDialog } from "@/components/ad-set-dialog";
 import { CampaignDialog } from "@/components/campaign-dialog";
 import { ProductDialog } from "@/components/product-dialog";
 
@@ -49,6 +51,120 @@ const RAIL = "ml-1 border-l pl-4";
 
 const COLLAPSE_ANIM =
   "overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down";
+
+/* ------------------------------------------------------------------ */
+/* Ad set                                                              */
+/* ------------------------------------------------------------------ */
+
+function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string }) {
+  const { removeAdSet } = useStore();
+  const [editing, setEditing] = React.useState(false);
+
+  return (
+    <>
+      <div className="group/adset flex items-start gap-2 rounded-md px-2 py-1.5 hover:bg-muted/60">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className={cn("text-[13px] font-medium leading-snug", STATUS_CLASS[adSet.status])}>
+              {adSet.name}
+            </span>
+            <Badge variant={STATUS_VARIANT[adSet.status]} className="h-4 px-1.5 text-[10px] capitalize">
+              {adSet.status}
+            </Badge>
+            {adSet.budget && (
+              <span className="text-muted-foreground text-xs tabular-nums">{adSet.budget}</span>
+            )}
+          </div>
+          {adSet.audience && (
+            <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">{adSet.audience}</p>
+          )}
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover/adset:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+              aria-label={`Options for ${adSet.name}`}
+            >
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => setEditing(true)}>
+              <Pencil />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={async () => {
+                try {
+                  await removeAdSet(adSet.id);
+                  toast.success("Ad set deleted");
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Could not delete");
+                }
+              }}
+            >
+              <Trash2 />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <AdSetDialog
+        open={editing}
+        onOpenChange={setEditing}
+        campaignId={adSet.campaignId}
+        campaignName={campaignName}
+        adSet={adSet}
+      />
+    </>
+  );
+}
+
+function AdSetSection({ campaign }: { campaign: Campaign }) {
+  const { data } = useStore();
+  const [adding, setAdding] = React.useState(false);
+  const adSets = data.adSets.filter((a) => a.campaignId === campaign.id);
+
+  return (
+    <div className="mt-2.5 border-t pt-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+          Ad sets{adSets.length > 0 && ` · ${adSets.length}`}
+        </span>
+        <Button
+          variant="ghost"
+          size="xs"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => setAdding(true)}
+        >
+          <Plus />
+          Ad set
+        </Button>
+      </div>
+
+      {adSets.length > 0 && (
+        <div className="mt-1 space-y-0.5">
+          {adSets.map((adSet) => (
+            <AdSetRow key={adSet.id} adSet={adSet} campaignName={campaign.name} />
+          ))}
+        </div>
+      )}
+
+      <AdSetDialog
+        open={adding}
+        onOpenChange={setAdding}
+        campaignId={campaign.id}
+        campaignName={campaign.name}
+      />
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Campaign                                                            */
@@ -119,6 +235,8 @@ function CampaignRow({
                 </a>
               </Button>
             )}
+
+            <AdSetSection campaign={campaign} />
           </div>
 
           <DropdownMenu>

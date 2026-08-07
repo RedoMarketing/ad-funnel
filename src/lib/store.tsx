@@ -8,11 +8,14 @@ import {
   deleteCampaign,
   deletePlatform,
   deleteProduct,
+  createAdSet,
+  deleteAdSet,
+  editAdSet,
   editCampaign,
   fetchFunnel,
   renameProduct,
 } from "./db";
-import { EMPTY_FUNNEL, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product } from "./types";
+import { EMPTY_FUNNEL, type AdSet, type AdSetInput, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product } from "./types";
 
 interface StoreValue {
   data: FunnelData;
@@ -28,6 +31,9 @@ interface StoreValue {
   addCampaign: (input: CampaignInput) => Promise<Campaign>;
   updateCampaign: (id: string, input: CampaignInput) => Promise<void>;
   removeCampaign: (id: string) => Promise<void>;
+  addAdSet: (input: AdSetInput) => Promise<AdSet>;
+  updateAdSet: (id: string, input: AdSetInput) => Promise<void>;
+  removeAdSet: (id: string) => Promise<void>;
   exportJson: () => string;
 }
 
@@ -103,11 +109,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeProduct: async (id) => {
         await write(
           () => deleteProduct(id),
-          (_, d) => ({
-            ...d,
-            products: d.products.filter((p) => p.id !== id),
-            campaigns: d.campaigns.filter((c) => c.productId !== id),
-          }),
+          (_, d) => {
+            const gone = new Set(d.campaigns.filter((c) => c.productId === id).map((c) => c.id));
+            return {
+              ...d,
+              products: d.products.filter((p) => p.id !== id),
+              campaigns: d.campaigns.filter((c) => c.productId !== id),
+              adSets: d.adSets.filter((a) => !gone.has(a.campaignId)),
+            };
+          },
         );
       },
 
@@ -126,11 +136,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removePlatform: async (id) => {
         await write(
           () => deletePlatform(id),
-          (_, d) => ({
-            ...d,
-            platforms: d.platforms.filter((p) => p.id !== id),
-            campaigns: d.campaigns.filter((c) => c.platformId !== id),
-          }),
+          (_, d) => {
+            const gone = new Set(d.campaigns.filter((c) => c.platformId === id).map((c) => c.id));
+            return {
+              ...d,
+              platforms: d.platforms.filter((p) => p.id !== id),
+              campaigns: d.campaigns.filter((c) => c.platformId !== id),
+              adSets: d.adSets.filter((a) => !gone.has(a.campaignId)),
+            };
+          },
         );
       },
 
@@ -153,7 +167,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeCampaign: async (id) => {
         await write(
           () => deleteCampaign(id),
-          (_, d) => ({ ...d, campaigns: d.campaigns.filter((c) => c.id !== id) }),
+          (_, d) => ({
+            ...d,
+            campaigns: d.campaigns.filter((c) => c.id !== id),
+            adSets: d.adSets.filter((a) => a.campaignId !== id),
+          }),
+        );
+      },
+
+      addAdSet: (input) =>
+        write(
+          () => createAdSet(input),
+          (adSet, d) => ({ ...d, adSets: [...d.adSets, adSet] }),
+        ),
+
+      updateAdSet: async (id, input) => {
+        await write(
+          () => editAdSet(id, input),
+          (adSet, d) => ({
+            ...d,
+            adSets: d.adSets.map((a) => (a.id === adSet.id ? adSet : a)),
+          }),
+        );
+      },
+
+      removeAdSet: async (id) => {
+        await write(
+          () => deleteAdSet(id),
+          (_, d) => ({ ...d, adSets: d.adSets.filter((a) => a.id !== id) }),
         );
       },
 

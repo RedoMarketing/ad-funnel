@@ -38,11 +38,30 @@ export interface Campaign {
   createdAt: string;
 }
 
+export interface AdSet {
+  id: string;
+  campaignId: string;
+  name: string;
+  audience?: string;
+  budget?: string;
+  status: CampaignStatus;
+  createdAt: string;
+}
+
+export interface AdSetInput {
+  campaignId: string;
+  name: string;
+  audience?: string;
+  budget?: string;
+  status: CampaignStatus;
+}
+
 export interface FunnelData {
   clouds: Cloud[];
   products: Product[];
   platforms: Platform[];
   campaigns: Campaign[];
+  adSets: AdSet[];
 }
 
 export const EMPTY_FUNNEL: FunnelData = {
@@ -50,6 +69,7 @@ export const EMPTY_FUNNEL: FunnelData = {
   products: [],
   platforms: [],
   campaigns: [],
+  adSets: [],
 };
 
 export interface CampaignInput {
