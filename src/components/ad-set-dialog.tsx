@@ -8,6 +8,7 @@ import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -110,11 +111,12 @@ export function AdSetDialog({
               <Label htmlFor="adset-audience">
                 Audience <span className="text-muted-foreground">(optional)</span>
               </Label>
-              <Input
+              <Textarea
                 id="adset-audience"
+                rows={3}
                 value={audience}
                 onChange={(e) => setAudience(e.target.value)}
-                placeholder="U.S. Merchants, 1k+ orders/mo"
+                placeholder={"Lookalikes: Closed Won\nIG Engagement 1yr\nRedo.com Visitors 1yr"}
               />
             </div>
 

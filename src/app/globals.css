@@ -77,6 +77,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /*
+   * Row actions fade in on hover, which touch devices can never trigger.
+   * Where there is no hover, show them outright so they stay reachable.
+   */
+  @media (hover: none) {
+    .row-action {
+      opacity: 1;
+    }
+  }
   body {
     @apply bg-background text-foreground font-sans;
   }

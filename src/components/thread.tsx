@@ -76,7 +76,9 @@ function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string 
             )}
           </div>
           {adSet.audience && (
-            <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">{adSet.audience}</p>
+            <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed whitespace-pre-line">
+              {adSet.audience}
+            </p>
           )}
         </div>
 
@@ -85,7 +87,7 @@ function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string 
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover/adset:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+              className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover/adset:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100 row-action"
               aria-label={`Options for ${adSet.name}`}
             >
               <MoreHorizontal />
@@ -218,7 +220,9 @@ function CampaignRow({
             )}
 
             {campaign.notes && (
-              <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{campaign.notes}</p>
+              <p className="text-muted-foreground mt-2 text-xs leading-relaxed whitespace-pre-line">
+                {campaign.notes}
+              </p>
             )}
 
             {campaign.landingUrl && (
@@ -243,7 +247,7 @@ function CampaignRow({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100 row-action"
                 aria-label={`Options for ${campaign.name}`}
               >
                 <MoreHorizontal />
