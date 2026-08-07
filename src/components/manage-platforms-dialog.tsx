@@ -26,17 +26,26 @@ export function ManagePlatformsDialog({
   const { data, addPlatform, removePlatform } = useStore();
   const [name, setName] = React.useState("");
 
-  function submit(e: React.FormEvent) {
+  const [saving, setSaving] = React.useState(false);
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed) return;
+    if (!trimmed || saving) return;
     if (data.platforms.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
       toast.error(`${trimmed} already exists`);
       return;
     }
-    addPlatform({ name: trimmed });
-    setName("");
-    toast.success(`Added ${trimmed}`);
+    setSaving(true);
+    try {
+      await addPlatform({ name: trimmed });
+      setName("");
+      toast.success(`Added ${trimmed}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not add platform");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -67,13 +76,17 @@ export function ManagePlatformsDialog({
                     size="icon-sm"
                     className="text-muted-foreground hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                     aria-label={`Remove ${platform.name}`}
-                    onClick={() => {
-                      removePlatform(platform.id);
-                      toast.success(
-                        inUse > 0
-                          ? `Removed ${platform.name} and its ${inUse} campaign${inUse === 1 ? "" : "s"}`
-                          : `Removed ${platform.name}`,
-                      );
+                    onClick={async () => {
+                      try {
+                        await removePlatform(platform.id);
+                        toast.success(
+                          inUse > 0
+                            ? `Removed ${platform.name} and its ${inUse} campaign${inUse === 1 ? "" : "s"}`
+                            : `Removed ${platform.name}`,
+                        );
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Could not remove platform");
+                      }
                     }}
                   >
                     <Trash2 />
@@ -93,7 +106,7 @@ export function ManagePlatformsDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="Pinterest, Snapchat, Taboola…"
             />
-            <Button type="submit" disabled={!name.trim()}>
+            <Button type="submit" disabled={!name.trim() || saving}>
               <Plus />
               Add
             </Button>

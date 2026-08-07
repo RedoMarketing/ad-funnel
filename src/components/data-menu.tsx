@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Download, MoreHorizontal, RotateCcw, Upload, Layers } from "lucide-react";
+import { Download, Layers, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
+import { clearFunnelData } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,10 +26,9 @@ import {
 import { ManagePlatformsDialog } from "@/components/manage-platforms-dialog";
 
 export function DataMenu() {
-  const { exportJson, importJson, resetAll } = useStore();
-  const [confirmReset, setConfirmReset] = React.useState(false);
+  const { exportJson, refresh, data } = useStore();
+  const [confirmClear, setConfirmClear] = React.useState(false);
   const [platformsOpen, setPlatformsOpen] = React.useState(false);
-  const fileRef = React.useRef<HTMLInputElement>(null);
 
   function handleExport() {
     const blob = new Blob([exportJson()], { type: "application/json" });
@@ -38,79 +38,75 @@ export function DataMenu() {
     a.download = `ad-funnel-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Exported");
+    toast.success("Exported a snapshot");
   }
 
-  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      importJson(await file.text());
-      toast.success("Imported");
-    } catch {
-      toast.error("That file could not be read as funnel data");
-    }
-    e.target.value = "";
-  }
+  const productCount = data.products.length;
+  const campaignCount = data.campaigns.length;
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="shrink-0" aria-label="Data options">
-            <MoreHorizontal className="size-4" />
+          <Button variant="ghost" size="icon-sm" className="shrink-0" aria-label="Data options">
+            <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuItem onSelect={() => setPlatformsOpen(true)}>
-            <Layers className="size-4" />
+            <Layers />
             Manage platforms
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={async () => {
+              await refresh();
+              toast.success("Reloaded from Supabase");
+            }}
+          >
+            <RefreshCw />
+            Reload
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={handleExport}>
-            <Download className="size-4" />
-            Export JSON
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => fileRef.current?.click()}>
-            <Upload className="size-4" />
-            Import JSON
+            <Download />
+            Export snapshot
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onSelect={() => setConfirmReset(true)}>
-            <RotateCcw className="size-4" />
-            Reset all data
+          <DropdownMenuItem variant="destructive" onSelect={() => setConfirmClear(true)}>
+            <Trash2 />
+            Delete all products
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept="application/json"
-        className="hidden"
-        onChange={handleImport}
-      />
-
       <ManagePlatformsDialog open={platformsOpen} onOpenChange={setPlatformsOpen} />
 
-      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+      <AlertDialog open={confirmClear} onOpenChange={setConfirmClear}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset everything?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete {productCount} product{productCount === 1 ? "" : "s"} and {campaignCount}{" "}
+              campaign{campaignCount === 1 ? "" : "s"}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This clears every product, platform, and campaign you have added and restores the
-              starting clouds. Export first if you want a copy.
+              This deletes them from Supabase for everyone, not just this browser, and cannot be
+              undone. Your platform list stays. Export a snapshot first if you want a copy.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                resetAll();
-                toast.success("Reset to a clean slate");
+              onClick={async () => {
+                try {
+                  await clearFunnelData();
+                  await refresh();
+                  toast.success("Deleted");
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Could not delete");
+                }
               }}
             >
-              Reset
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

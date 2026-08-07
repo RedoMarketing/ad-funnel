@@ -140,9 +140,13 @@ function CampaignRow({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
-                onSelect={() => {
-                  removeCampaign(campaign.id);
-                  toast.success("Campaign deleted");
+                onSelect={async () => {
+                  try {
+                    await removeCampaign(campaign.id);
+                    toast.success("Campaign deleted");
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Could not delete");
+                  }
                 }}
               >
                 <Trash2 />

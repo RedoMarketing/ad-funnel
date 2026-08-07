@@ -33,24 +33,33 @@ export function ProductDialog({
 }) {
   const { addProduct, updateProduct } = useStore();
   const [name, setName] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
     setName(product?.name ?? "");
+    setSaving(false);
   }, [open, product]);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed) return;
-    if (product) {
-      updateProduct(product.id, { name: trimmed });
-      toast.success("Product updated");
-    } else {
-      addProduct({ cloudId, name: trimmed });
-      toast.success(`Added ${trimmed} to ${cloudName}`);
+    if (!trimmed || saving) return;
+    setSaving(true);
+    try {
+      if (product) {
+        await updateProduct(product.id, trimmed);
+        toast.success("Product updated");
+      } else {
+        await addProduct({ cloudId, name: trimmed });
+        toast.success(`Added ${trimmed} to ${cloudName}`);
+      }
+      onOpenChange(false);
+    } catch (e) {
+      // Leave the dialog open so the typed name isn't lost.
+      toast.error(e instanceof Error ? e.message : "Could not save");
+      setSaving(false);
     }
-    onOpenChange(false);
   }
 
   return (
@@ -83,8 +92,8 @@ export function ProductDialog({
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={!name.trim()}>
-              {product ? "Save changes" : "Add product"}
+            <Button type="submit" disabled={!name.trim() || saving}>
+              {saving ? "Saving…" : product ? "Save changes" : "Add product"}
             </Button>
           </DialogFooter>
         </form>

@@ -62,6 +62,7 @@ export function CampaignDialog({
   const [budget, setBudget] = React.useState("");
   const [landingUrl, setLandingUrl] = React.useState("");
   const [notes, setNotes] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
@@ -75,6 +76,7 @@ export function CampaignDialog({
     setBudget(campaign?.budget ?? "");
     setLandingUrl(campaign?.landingUrl ?? "");
     setNotes(campaign?.notes ?? "");
+    setSaving(false);
   }, [open, campaign, defaultPlatformId, data.platforms]);
 
   const creatingPlatform = platformId === NEW_PLATFORM;
@@ -82,45 +84,49 @@ export function CampaignDialog({
     name.trim().length > 0 &&
     (creatingPlatform ? newPlatformName.trim().length > 0 : platformId.length > 0);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || saving) return;
+    setSaving(true);
 
-    let resolvedPlatformId = platformId;
+    try {
+      let resolvedPlatformId = platformId;
 
-    if (creatingPlatform) {
-      const trimmed = newPlatformName.trim();
-      const existing = data.platforms.find(
-        (p) => p.name.toLowerCase() === trimmed.toLowerCase(),
-      );
-      if (existing) {
-        resolvedPlatformId = existing.id;
-      } else {
-        resolvedPlatformId = addPlatform({ name: trimmed }).id;
+      if (creatingPlatform) {
+        const trimmed = newPlatformName.trim();
+        const existing = data.platforms.find(
+          (p) => p.name.toLowerCase() === trimmed.toLowerCase(),
+        );
+        // createPlatform is idempotent on name, so this is just a round-trip saver.
+        resolvedPlatformId = existing ? existing.id : (await addPlatform({ name: trimmed })).id;
       }
-    }
 
-    const payload = {
-      productId,
-      platformId: resolvedPlatformId,
-      name: name.trim(),
-      stage,
-      status,
-      objective: objective.trim() || undefined,
-      audience: audience.trim() || undefined,
-      budget: budget.trim() || undefined,
-      landingUrl: landingUrl.trim() || undefined,
-      notes: notes.trim() || undefined,
-    };
+      const payload = {
+        productId,
+        platformId: resolvedPlatformId,
+        name: name.trim(),
+        stage,
+        status,
+        objective: objective.trim() || undefined,
+        audience: audience.trim() || undefined,
+        budget: budget.trim() || undefined,
+        landingUrl: landingUrl.trim() || undefined,
+        notes: notes.trim() || undefined,
+      };
 
-    if (campaign) {
-      updateCampaign(campaign.id, payload);
-      toast.success("Campaign updated");
-    } else {
-      addCampaign(payload);
-      toast.success(`Added to ${productName}`);
+      if (campaign) {
+        await updateCampaign(campaign.id, payload);
+        toast.success("Campaign updated");
+      } else {
+        await addCampaign(payload);
+        toast.success(`Added to ${productName}`);
+      }
+      onOpenChange(false);
+    } catch (e) {
+      // Leave the dialog open so a long form isn't lost on a failed write.
+      toast.error(e instanceof Error ? e.message : "Could not save");
+      setSaving(false);
     }
-    onOpenChange(false);
   }
 
   return (
@@ -277,8 +283,8 @@ export function CampaignDialog({
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={!canSubmit}>
-              {campaign ? "Save changes" : "Add campaign"}
+            <Button type="submit" disabled={!canSubmit || saving}>
+              {saving ? "Saving…" : campaign ? "Save changes" : "Add campaign"}
             </Button>
           </DialogFooter>
         </form>

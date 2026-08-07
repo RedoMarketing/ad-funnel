@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft, Plus, TriangleAlert } from "lucide-react";
 import { useStore, useCloudThread } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -13,25 +13,63 @@ import { ProductThread } from "@/components/thread";
 
 export default function CloudPage() {
   const params = useParams<{ slug: string }>();
-  const { data, ready } = useStore();
+  const { data, ready, error, refresh } = useStore();
   const [addingProduct, setAddingProduct] = React.useState(false);
 
   const cloud = data.clouds.find((c) => c.slug === params.slug);
   const thread = useCloudThread(cloud?.id ?? "");
 
-  if (!cloud) notFound();
-
   const allCampaigns = thread.flatMap((t) => t.campaigns);
   const platformCount = new Set(allCampaigns.map((c) => c.platformId)).size;
 
+  const backLink = (
+    <Button asChild variant="ghost" size="sm" className="text-muted-foreground -ml-2">
+      <Link href="/">
+        <ChevronLeft />
+        All clouds
+      </Link>
+    </Button>
+  );
+
+  // Clouds arrive from Supabase, so an unknown slug is only really unknown
+  // once the load has finished.
+  if (ready && !error && !cloud) notFound();
+
+  if (error) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+        {backLink}
+        <Card className="mt-4">
+          <CardContent className="flex flex-col items-center px-6 py-12 text-center">
+            <TriangleAlert className="text-muted-foreground size-5" />
+            <CardTitle className="mt-3 text-sm">Could not reach Supabase</CardTitle>
+            <CardDescription className="mt-1.5 max-w-md break-words">{error}</CardDescription>
+            <Button className="mt-5" onClick={() => refresh()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!ready || !cloud) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+        {backLink}
+        <div className="mt-4 space-y-4">
+          <Skeleton className="h-9 w-56" />
+          <Skeleton className="h-4 w-72" />
+          <Skeleton className="h-28 w-full rounded-xl" />
+          <Skeleton className="h-28 w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      <Button asChild variant="ghost" size="sm" className="text-muted-foreground -ml-2">
-        <Link href="/">
-          <ChevronLeft />
-          All clouds
-        </Link>
-      </Button>
+      {backLink}
 
       <header className="mt-4 border-b pb-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -59,13 +97,7 @@ export default function CloudPage() {
       </header>
 
       <div className="mt-6 space-y-4">
-        {!ready ? (
-          <div className="space-y-4">
-            {[0, 1].map((i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : thread.length === 0 ? (
+        {thread.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center px-6 py-10 text-center">
               <CardTitle className="text-sm">No products in {cloud.name} yet</CardTitle>

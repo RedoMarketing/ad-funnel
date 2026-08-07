@@ -39,11 +39,30 @@ export interface Campaign {
 }
 
 export interface FunnelData {
-  version: number;
   clouds: Cloud[];
   products: Product[];
   platforms: Platform[];
   campaigns: Campaign[];
+}
+
+export const EMPTY_FUNNEL: FunnelData = {
+  clouds: [],
+  products: [],
+  platforms: [],
+  campaigns: [],
+};
+
+export interface CampaignInput {
+  productId: string;
+  platformId: string;
+  name: string;
+  stage: FunnelStage;
+  status: CampaignStatus;
+  objective?: string;
+  audience?: string;
+  budget?: string;
+  landingUrl?: string;
+  notes?: string;
 }
 
 export const FUNNEL_STAGES: { value: FunnelStage; label: string; short: string }[] = [

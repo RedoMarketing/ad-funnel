@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local editor/agent config
 /.claude
+
+# but do commit the template (no secrets in it)
+!.env.example

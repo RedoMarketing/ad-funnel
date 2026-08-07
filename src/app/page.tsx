@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { Cloud } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function CloudCard({ cloud }: { cloud: Cloud }) {
   const { data } = useStore();
@@ -52,7 +55,7 @@ function CloudCard({ cloud }: { cloud: Cloud }) {
 }
 
 export default function Home() {
-  const { data, ready } = useStore();
+  const { data, ready, error, refresh } = useStore();
 
   const active = data.campaigns.filter((c) => c.status === "active").length;
 
@@ -64,7 +67,7 @@ export default function Home() {
           Every campaign you are running, organized by cloud, then product, then ad platform. Open a
           cloud to work through it as a thread.
         </p>
-        {ready && data.campaigns.length > 0 && (
+        {ready && !error && data.campaigns.length > 0 && (
           <p className="text-muted-foreground mt-3 text-sm">
             <span className="text-foreground font-medium tabular-nums">{data.products.length}</span>{" "}
             products ·{" "}
@@ -77,11 +80,24 @@ export default function Home() {
         )}
       </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {data.clouds.map((cloud) => (
-          <CloudCard key={cloud.id} cloud={cloud} />
-        ))}
-      </div>
+      {error ? (
+        <Card className="mt-8">
+          <CardContent className="flex flex-col items-center px-6 py-12 text-center">
+            <TriangleAlert className="text-muted-foreground size-5" />
+            <CardTitle className="mt-3 text-sm">Could not reach Supabase</CardTitle>
+            <CardDescription className="mt-1.5 max-w-md break-words">{error}</CardDescription>
+            <Button className="mt-5" onClick={() => refresh()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {!ready
+            ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44 w-full rounded-xl" />)
+            : data.clouds.map((cloud) => <CloudCard key={cloud.id} cloud={cloud} />)}
+        </div>
+      )}
     </div>
   );
 }
