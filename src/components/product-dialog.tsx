@@ -3,6 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
+import { haptic } from "@/lib/haptics";
 import type { Product } from "@/lib/types";
 import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export function ProductDialog({
         await addProduct({ cloudId, name: trimmed });
         toast.success(`Added ${trimmed} to ${cloudName}`);
       }
+      haptic();
       onOpenChange(false);
     } catch (e) {
       // Leave the dialog open so the typed name isn't lost.

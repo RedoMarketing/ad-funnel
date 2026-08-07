@@ -23,6 +23,7 @@ import {
   type Product,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { haptic } from "@/lib/haptics";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -310,7 +311,14 @@ function PlatformGroup({
 
   return (
     <>
-      <Collapsible open={open} onOpenChange={setOpen} className="pt-2">
+      <Collapsible
+        open={open}
+        onOpenChange={(v) => {
+          haptic();
+          setOpen(v);
+        }}
+        className="pt-2"
+      >
         <div className="flex items-center gap-2">
           <CollapsibleTrigger asChild>
             <Button
@@ -392,8 +400,14 @@ export function ProductThread({
 
   return (
     <>
-      <Card className="gap-0 px-4 py-4 sm:px-5">
-        <Collapsible open={open} onOpenChange={setOpen}>
+      <Card className="thread-in gap-0 px-4 py-4 sm:px-5">
+        <Collapsible
+          open={open}
+          onOpenChange={(v) => {
+            haptic();
+            setOpen(v);
+          }}
+        >
           <div className="flex items-start gap-2">
             <h3 className="min-w-0 flex-1 text-[15px] leading-tight font-semibold">
               {product.name}

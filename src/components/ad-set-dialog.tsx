@@ -3,6 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
+import { haptic } from "@/lib/haptics";
 import { CAMPAIGN_STATUSES, type AdSet, type CampaignStatus } from "@/lib/types";
 import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ export function AdSetDialog({
         await addAdSet(payload);
         toast.success(`Added to ${campaignName}`);
       }
+      haptic();
       onOpenChange(false);
     } catch (e) {
       // Leave the dialog open so the typed values aren't lost.

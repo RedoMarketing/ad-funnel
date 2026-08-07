@@ -4,6 +4,7 @@ import * as React from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
+import { haptic } from "@/lib/haptics";
 import {
   CAMPAIGN_STATUSES,
   FUNNEL_STAGES,
@@ -120,6 +121,7 @@ export function CampaignDialog({
         await addCampaign(payload);
         toast.success(`Added to ${productName}`);
       }
+      haptic();
       onOpenChange(false);
     } catch (e) {
       // Leave the dialog open so a long form isn't lost on a failed write.

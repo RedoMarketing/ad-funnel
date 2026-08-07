@@ -6,6 +6,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { StoreProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
+import { IOS_SWITCH_ID } from "@/lib/haptics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +44,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background">
+        {/*
+          Hidden iOS haptic source. Safari has no navigator.vibrate, but a
+          checkbox with the `switch` attribute buzzes when its label is
+          activated, so lib/haptics.ts clicks this one. Inert to users and AT.
+        */}
+        <input
+          type="checkbox"
+          id={IOS_SWITCH_ID}
+          {...({ switch: "" } as Record<string, string>)}
+          readOnly
+          tabIndex={-1}
+          aria-hidden="true"
+          className="pointer-events-none fixed size-px opacity-0"
+        />
+        <label htmlFor={IOS_SWITCH_ID} aria-hidden="true" className="pointer-events-none fixed size-px opacity-0" />
         <AuthProvider>
           <AuthGate>
             <StoreProvider>
