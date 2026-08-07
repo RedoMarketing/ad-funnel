@@ -382,7 +382,9 @@ export function ProductThread({
   byPlatform: { platform: Platform; campaigns: Campaign[] }[];
 }) {
   const { removeProduct } = useStore();
-  const [open, setOpen] = React.useState(true);
+  // Collapsed by default: a cloud page should open as a scannable list of
+  // products, not a wall of every campaign at once.
+  const [open, setOpen] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
 
