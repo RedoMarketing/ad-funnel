@@ -246,17 +246,6 @@ export async function deleteCampaign(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-/**
- * Drops every product, and every campaign with it via the cascade. The cloud
- * list and the platform catalog survive, since those are structure rather than
- * entered data.
- */
-export async function clearFunnelData(): Promise<void> {
-  const db = supabaseAdmin();
-  // Supabase requires a filter on delete; every uuid is non-null.
-  const { error } = await db.from("funnel_products").delete().not("id", "is", null);
-  if (error) throw new Error(error.message);
-}
 
 /* ---------------------------------------------------------------- */
 /* ad sets                                                           */
