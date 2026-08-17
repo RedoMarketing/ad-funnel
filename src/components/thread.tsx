@@ -132,32 +132,61 @@ function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string 
 function AdSetSection({ campaign }: { campaign: Campaign }) {
   const { data } = useStore();
   const [adding, setAdding] = React.useState(false);
+  // Collapsed by default: audiences are long, and a campaign card should stay
+  // scannable until you actually want the breakdown.
+  const [open, setOpen] = React.useState(false);
   const adSets = data.adSets.filter((a) => a.campaignId === campaign.id);
+  const activeCount = adSets.filter((a) => a.status === "active").length;
 
   return (
-    <div className="mt-2.5 border-t pt-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-          Ad sets{adSets.length > 0 && ` · ${adSets.length}`}
-        </span>
-        <Button
-          variant="ghost"
-          size="xs"
-          className="text-muted-foreground hover:text-foreground"
-          onClick={() => setAdding(true)}
-        >
-          <Plus />
-          Ad set
-        </Button>
-      </div>
+    <div className="mt-2.5 border-t pt-1">
+      <Collapsible
+        open={open}
+        onOpenChange={(v) => {
+          haptic();
+          setOpen(v);
+        }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <CollapsibleTrigger asChild disabled={adSets.length === 0}>
+            <Button
+              variant="ghost"
+              size="xs"
+              className="text-muted-foreground hover:text-foreground -ml-1.5 min-w-0 flex-1 justify-start font-normal disabled:opacity-100"
+            >
+              {adSets.length > 0 && (
+                <ChevronRight
+                  className={cn("transition-transform", open && "rotate-90")}
+                  aria-hidden
+                />
+              )}
+              <span className="text-[11px] font-medium tracking-wide uppercase">
+                Ad sets
+                {adSets.length > 0 && ` · ${adSets.length}`}
+                {activeCount > 0 && ` · ${activeCount} active`}
+              </span>
+            </Button>
+          </CollapsibleTrigger>
 
-      {adSets.length > 0 && (
-        <div className="mt-1 space-y-0.5">
-          {adSets.map((adSet) => (
-            <AdSetRow key={adSet.id} adSet={adSet} campaignName={campaign.name} />
-          ))}
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-muted-foreground hover:text-foreground shrink-0"
+            onClick={() => setAdding(true)}
+          >
+            <Plus />
+            Ad set
+          </Button>
         </div>
-      )}
+
+        <CollapsibleContent className={COLLAPSE_ANIM}>
+          <div className="mt-1 space-y-0.5 pb-1">
+            {adSets.map((adSet) => (
+              <AdSetRow key={adSet.id} adSet={adSet} campaignName={campaign.name} />
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       <AdSetDialog
         open={adding}
