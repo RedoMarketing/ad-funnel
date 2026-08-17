@@ -365,7 +365,9 @@ function PlatformGroup({
   campaigns: Campaign[];
   product: Product;
 }) {
-  const [open, setOpen] = React.useState(true);
+  // Collapsed too: opening a product should reveal which platforms are in
+  // play, not every campaign under all of them at once.
+  const [open, setOpen] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
 
   return (
@@ -440,13 +442,11 @@ function PlatformGroup({
 export function ProductThread({
   cloud,
   product,
-  campaigns,
   byPlatform,
   index = 0,
 }: {
   cloud: Cloud;
   product: Product;
-  campaigns: Campaign[];
   byPlatform: { platform: Platform; campaigns: Campaign[] }[];
   /** Position in the list, used to stagger the entrance. */
   index?: number;
@@ -482,9 +482,6 @@ export function ProductThread({
                   aria-hidden
                 />
                 <span className="truncate text-[15px] font-semibold">{product.name}</span>
-                <span className="text-muted-foreground shrink-0 text-xs">
-                  {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
-                </span>
               </Button>
             </CollapsibleTrigger>
 
