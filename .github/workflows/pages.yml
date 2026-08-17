@@ -36,7 +36,7 @@ jobs:
       - name: Restore the previous build's assets
         uses: actions/cache/restore@v4
         with:
-          path: .previous-static
+          path: pages-static-snapshot
           key: pages-static-${{ github.run_id }}
           restore-keys: |
             pages-static-
@@ -46,17 +46,17 @@ jobs:
           set -euo pipefail
           # Stash this build untouched — only one generation is ever cached,
           # so the site holds at most two and the cache cannot grow forever.
-          rm -rf .current-static
-          cp -r out/_next/static .current-static
-          if [ -d .previous-static ]; then
+          rm -rf pages-static-current
+          cp -r out/_next/static pages-static-current
+          if [ -d pages-static-snapshot ]; then
             # -n keeps the new build's files when names collide.
-            cp -rn .previous-static/. out/_next/static/ || true
-            echo "carried forward: $(find .previous-static -type f | wc -l) files"
+            cp -rn pages-static-snapshot/. out/_next/static/ || true
+            echo "carried forward: $(find pages-static-snapshot -type f | wc -l) files"
           else
             echo "no previous build cached; first run"
           fi
-          rm -rf .previous-static
-          mv .current-static .previous-static
+          rm -rf pages-static-snapshot
+          mv pages-static-current pages-static-snapshot
 
       # Handed to the deploy job, which caches it only if the deploy lands.
       # Saving here instead would let a failed deploy overwrite the last
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: pristine-static
-          path: .previous-static
+          path: pages-static-snapshot
           retention-days: 1
 
       - uses: actions/upload-pages-artifact@v3
@@ -86,8 +86,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: pristine-static
-          path: .previous-static
+          path: pages-static-snapshot
       - uses: actions/cache/save@v4
         with:
-          path: .previous-static
+          path: pages-static-snapshot
           key: pages-static-${{ github.run_id }}

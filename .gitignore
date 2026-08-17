@@ -45,3 +45,7 @@ next-env.d.ts
 
 # but do commit the template (no secrets in it)
 !.env.example
+
+# build scratch for the Pages asset carry-forward
+/pages-static-snapshot
+/pages-static-current
