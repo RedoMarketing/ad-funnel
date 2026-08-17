@@ -340,7 +340,6 @@ function PlatformGroup({
 }) {
   const [open, setOpen] = React.useState(true);
   const [adding, setAdding] = React.useState(false);
-  const activeCount = campaigns.filter((c) => c.status === "active").length;
 
   return (
     <>
@@ -366,7 +365,6 @@ function PlatformGroup({
               <span className="truncate font-medium">{platform.name}</span>
               <span className="text-muted-foreground shrink-0 text-xs">
                 {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
-                {activeCount > 0 && ` · ${activeCount} active`}
               </span>
             </Button>
           </CollapsibleTrigger>
@@ -433,7 +431,6 @@ export function ProductThread({
   const [adding, setAdding] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
 
-  const activeCount = campaigns.filter((c) => c.status === "active").length;
 
   return (
     <>
@@ -492,9 +489,7 @@ export function ProductThread({
                   className={cn("transition-transform", open && "rotate-90")}
                   aria-hidden
                 />
-                {byPlatform.length} platform{byPlatform.length === 1 ? "" : "s"} ·{" "}
                 {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
-                {activeCount > 0 && ` · ${activeCount} active`}
               </Button>
             </CollapsibleTrigger>
 
