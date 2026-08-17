@@ -469,17 +469,41 @@ export function ProductThread({
             setOpen(v);
           }}
         >
-          <div className="flex items-start gap-2">
-            <h3 className="min-w-0 flex-1 text-[15px] leading-tight font-semibold">
-              {product.name}
-            </h3>
+          <div className="flex items-center gap-2">
+            {/* The header row is the toggle, matching how a platform row reads. */}
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-2 min-w-0 flex-1 justify-start font-normal"
+              >
+                <ChevronRight
+                  className={cn("transition-transform", open && "rotate-90")}
+                  aria-hidden
+                />
+                <span className="truncate text-[15px] font-semibold">{product.name}</span>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
+                </span>
+              </Button>
+            </CollapsibleTrigger>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground shrink-0"
+              onClick={() => setAdding(true)}
+            >
+              <MessageSquarePlus />
+              Campaign
+            </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="text-muted-foreground -mt-1 shrink-0"
+                  className="text-muted-foreground shrink-0"
                   aria-label={`Options for ${product.name}`}
                 >
                   <MoreHorizontal />
@@ -505,35 +529,9 @@ export function ProductThread({
             </DropdownMenu>
           </div>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-1">
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground -ml-2 font-normal"
-              >
-                <ChevronRight
-                  className={cn("transition-transform", open && "rotate-90")}
-                  aria-hidden
-                />
-                {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
-              </Button>
-            </CollapsibleTrigger>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => setAdding(true)}
-            >
-              <MessageSquarePlus />
-              Add campaign
-            </Button>
-          </div>
-
           <CollapsibleContent className={COLLAPSE_ANIM}>
             {byPlatform.length > 0 ? (
-              <div className={cn(RAIL, "mt-1 pb-1")}>
+              <div className="mt-1 pb-1">
                 {byPlatform.map((group) => (
                   <PlatformGroup
                     key={group.platform.id}
