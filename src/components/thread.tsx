@@ -136,7 +136,6 @@ function AdSetSection({ campaign }: { campaign: Campaign }) {
   // scannable until you actually want the breakdown.
   const [open, setOpen] = React.useState(false);
   const adSets = data.adSets.filter((a) => a.campaignId === campaign.id);
-  const activeCount = adSets.filter((a) => a.status === "active").length;
 
   return (
     <div className="mt-2.5 border-t pt-1">
@@ -160,10 +159,10 @@ function AdSetSection({ campaign }: { campaign: Campaign }) {
                   aria-hidden
                 />
               )}
-              <span className="text-[11px] font-medium tracking-wide uppercase">
-                Ad sets
-                {adSets.length > 0 && ` · ${adSets.length}`}
-                {activeCount > 0 && ` · ${activeCount} active`}
+              <span className="text-xs">
+                {adSets.length === 0
+                  ? "No ad sets"
+                  : `${adSets.length} ad set${adSets.length === 1 ? "" : "s"}`}
               </span>
             </Button>
           </CollapsibleTrigger>
