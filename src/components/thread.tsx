@@ -526,7 +526,13 @@ export function ProductThread({
             </DropdownMenu>
           </div>
 
-          <CollapsibleContent className={COLLAPSE_ANIM}>
+          {/*
+            Negative margin widens the clip box so the platform rows' own
+            -ml-2 (and their focus rings) aren't sheared off by the
+            overflow-hidden the height animation needs. Padding puts the
+            content back where it was.
+          */}
+          <CollapsibleContent className={cn(COLLAPSE_ANIM, "-mx-3 px-3")}>
             {byPlatform.length > 0 ? (
               <div className="mt-1 pb-1">
                 {byPlatform.map((group) => (
