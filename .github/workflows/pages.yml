@@ -58,11 +58,15 @@ jobs:
           rm -rf .previous-static
           mv .current-static .previous-static
 
-      - name: Cache this build's assets for the next deploy
-        uses: actions/cache/save@v4
+      # Handed to the deploy job, which caches it only if the deploy lands.
+      # Saving here instead would let a failed deploy overwrite the last
+      # generation that actually shipped, which is exactly what happened
+      # during a Pages outage: repeated builds of one commit evicted it.
+      - uses: actions/upload-artifact@v4
         with:
+          name: pristine-static
           path: .previous-static
-          key: pages-static-${{ github.run_id }}
+          retention-days: 1
 
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -76,3 +80,14 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      # Only now is this generation genuinely live, so only now is it the
+      # thing the next build should carry forward.
+      - uses: actions/download-artifact@v4
+        with:
+          name: pristine-static
+          path: .previous-static
+      - uses: actions/cache/save@v4
+        with:
+          path: .previous-static
+          key: pages-static-${{ github.run_id }}
