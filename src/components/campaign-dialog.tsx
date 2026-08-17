@@ -15,6 +15,7 @@ import {
 import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/money-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -231,12 +232,7 @@ export function CampaignDialog({
                 <Label htmlFor="campaign-budget">
                   Budget <span className="text-muted-foreground">(optional)</span>
                 </Label>
-                <Input
-                  id="campaign-budget"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  placeholder="$5k / mo"
-                />
+                <MoneyInput id="campaign-budget" value={budget} onChange={setBudget} />
               </div>
             </div>
 
