@@ -37,6 +37,8 @@ interface StoreValue {
   addAdSet: (input: AdSetInput) => Promise<AdSet>;
   updateAdSet: (id: string, input: AdSetInput) => Promise<void>;
   removeAdSet: (id: string) => Promise<void>;
+  duplicateAdSet: (id: string) => Promise<void>;
+  duplicateCampaign: (id: string) => Promise<void>;
   addTodo: (text: string) => Promise<Todo>;
   toggleTodo: (id: string, done: boolean) => Promise<void>;
   removeTodo: (id: string) => Promise<void>;
@@ -202,6 +204,59 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           () => deleteAdSet(id),
           (_, d) => ({ ...d, adSets: d.adSets.filter((a) => a.id !== id) }),
         );
+      },
+
+      duplicateAdSet: async (id) => {
+        const source = data.adSets.find((a) => a.id === id);
+        if (!source) return;
+        await write(
+          () =>
+            createAdSet({
+              campaignId: source.campaignId,
+              name: `${source.name} (copy)`,
+              audience: source.audience,
+              budget: source.budget,
+              status: source.status,
+            }),
+          (adSet, d) => ({ ...d, adSets: [...d.adSets, adSet] }),
+        );
+      },
+
+      /** Copies the campaign and everything hanging off it. */
+      duplicateCampaign: async (id) => {
+        const source = data.campaigns.find((c) => c.id === id);
+        if (!source) return;
+        const sourceAdSets = data.adSets.filter((a) => a.campaignId === id);
+
+        const copy = await write(
+          () =>
+            createCampaign({
+              productId: source.productId,
+              platformId: source.platformId,
+              name: `${source.name} (copy)`,
+              stage: source.stage,
+              status: source.status,
+              objective: source.objective,
+              budget: source.budget,
+              landingUrl: source.landingUrl,
+              notes: source.notes,
+            }),
+          (campaign, d) => ({ ...d, campaigns: [...d.campaigns, campaign] }),
+        );
+
+        for (const a of sourceAdSets) {
+          await write(
+            () =>
+              createAdSet({
+                campaignId: copy.id,
+                name: a.name,
+                audience: a.audience,
+                budget: a.budget,
+                status: a.status,
+              }),
+            (adSet, d) => ({ ...d, adSets: [...d.adSets, adSet] }),
+          );
+        }
       },
 
       addTodo: (text) =>

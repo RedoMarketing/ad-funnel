@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   ChevronRight,
+  Copy,
   ExternalLink,
   MessageSquarePlus,
   MoreHorizontal,
@@ -58,7 +59,7 @@ const COLLAPSE_ANIM =
 /* ------------------------------------------------------------------ */
 
 function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string }) {
-  const { removeAdSet } = useStore();
+  const { removeAdSet, duplicateAdSet } = useStore();
   const [editing, setEditing] = React.useState(false);
 
   return (
@@ -98,6 +99,19 @@ function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string 
             <DropdownMenuItem onSelect={() => setEditing(true)}>
               <Pencil />
               Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={async () => {
+                try {
+                  await duplicateAdSet(adSet.id);
+                  toast.success("Ad set duplicated");
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Could not duplicate");
+                }
+              }}
+            >
+              <Copy />
+              Duplicate
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -212,7 +226,7 @@ function CampaignRow({
   productId: string;
   index?: number;
 }) {
-  const { removeCampaign } = useStore();
+  const { removeCampaign, duplicateCampaign } = useStore();
   const [editing, setEditing] = React.useState(false);
 
   const meta = [
@@ -293,6 +307,19 @@ function CampaignRow({
               <DropdownMenuItem onSelect={() => setEditing(true)}>
                 <Pencil />
                 Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={async () => {
+                  try {
+                    await duplicateCampaign(campaign.id);
+                    toast.success("Campaign duplicated");
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Could not duplicate");
+                  }
+                }}
+              >
+                <Copy />
+                Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
