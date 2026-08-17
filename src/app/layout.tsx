@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/site-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DataMenu } from "@/components/data-menu";
+import { TodoWidget } from "@/components/todo-widget";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { IOS_SWITCH_ID } from "@/lib/haptics";
 
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     <DataMenu />
                   </div>
                   <main className="flex-1">{children}</main>
+                  <TodoWidget />
                 </SidebarInset>
               </SidebarProvider>
             </StoreProvider>

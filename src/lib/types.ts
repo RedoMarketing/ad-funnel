@@ -55,12 +55,20 @@ export interface AdSetInput {
   status: CampaignStatus;
 }
 
+export interface Todo {
+  id: string;
+  text: string;
+  done: boolean;
+  createdAt: string;
+}
+
 export interface FunnelData {
   clouds: Cloud[];
   products: Product[];
   platforms: Platform[];
   campaigns: Campaign[];
   adSets: AdSet[];
+  todos: Todo[];
 }
 
 export const EMPTY_FUNNEL: FunnelData = {
@@ -69,6 +77,7 @@ export const EMPTY_FUNNEL: FunnelData = {
   platforms: [],
   campaigns: [],
   adSets: [],
+  todos: [],
 };
 
 export interface CampaignInput {

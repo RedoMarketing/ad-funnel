@@ -29,6 +29,7 @@ import type {
   FunnelData,
   Platform,
   Product,
+  Todo,
 } from "./types";
 
 /* ---------------------------------------------------------------- */
@@ -131,15 +132,17 @@ const campaignColumns = (input: CampaignInput) => ({
 export async function fetchFunnel(): Promise<FunnelData> {
   const db = supabaseAdmin();
 
-  const [clouds, products, platforms, campaigns, adSets] = await Promise.all([
+  const [clouds, products, platforms, campaigns, adSets, todos] = await Promise.all([
     db.from("funnel_clouds").select("*").order("sort_order"),
     db.from("funnel_products").select("*").order("created_at"),
     db.from("funnel_platforms").select("*").order("name"),
     db.from("funnel_campaigns").select("*").order("created_at"),
     db.from("funnel_ad_sets").select("*").order("created_at"),
+    // Open items first, newest last within each group.
+    db.from("funnel_todos").select("*").order("done").order("created_at"),
   ]);
 
-  const failed = [clouds, products, platforms, campaigns, adSets].find((r) => r.error);
+  const failed = [clouds, products, platforms, campaigns, adSets, todos].find((r) => r.error);
   if (failed?.error) throw new Error(failed.error.message);
 
   return {
@@ -148,6 +151,7 @@ export async function fetchFunnel(): Promise<FunnelData> {
     platforms: (platforms.data as PlatformRow[]).map(toPlatform),
     campaigns: (campaigns.data as CampaignRow[]).map(toCampaign),
     adSets: (adSets.data as AdSetRow[]).map(toAdSet),
+    todos: (todos.data as TodoRow[]).map(toTodo),
   };
 }
 
@@ -282,5 +286,44 @@ export async function editAdSet(id: string, input: AdSetInput): Promise<AdSet> {
 
 export async function deleteAdSet(id: string): Promise<void> {
   const { error } = await supabaseAdmin().from("funnel_ad_sets").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/* ---------------------------------------------------------------- */
+/* todos                                                             */
+/* ---------------------------------------------------------------- */
+
+type TodoRow = { id: string; text: string; done: boolean; created_at: string };
+
+const toTodo = (r: TodoRow): Todo => ({
+  id: r.id,
+  text: r.text,
+  done: r.done,
+  createdAt: r.created_at,
+});
+
+export async function createTodo(text: string): Promise<Todo> {
+  const { data, error } = await supabaseAdmin()
+    .from("funnel_todos")
+    .insert({ text: text.trim() })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return toTodo(data as TodoRow);
+}
+
+export async function setTodoDone(id: string, done: boolean): Promise<Todo> {
+  const { data, error } = await supabaseAdmin()
+    .from("funnel_todos")
+    .update({ done, done_at: done ? new Date().toISOString() : null })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return toTodo(data as TodoRow);
+}
+
+export async function deleteTodo(id: string): Promise<void> {
+  const { error } = await supabaseAdmin().from("funnel_todos").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }

@@ -12,10 +12,13 @@ import {
   deleteAdSet,
   editAdSet,
   editCampaign,
+  createTodo,
+  deleteTodo,
   fetchFunnel,
   renameProduct,
+  setTodoDone,
 } from "./db";
-import { EMPTY_FUNNEL, type AdSet, type AdSetInput, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product } from "./types";
+import { EMPTY_FUNNEL, type AdSet, type AdSetInput, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product, type Todo } from "./types";
 
 interface StoreValue {
   data: FunnelData;
@@ -34,6 +37,9 @@ interface StoreValue {
   addAdSet: (input: AdSetInput) => Promise<AdSet>;
   updateAdSet: (id: string, input: AdSetInput) => Promise<void>;
   removeAdSet: (id: string) => Promise<void>;
+  addTodo: (text: string) => Promise<Todo>;
+  toggleTodo: (id: string, done: boolean) => Promise<void>;
+  removeTodo: (id: string) => Promise<void>;
   exportJson: () => string;
 }
 
@@ -195,6 +201,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         await write(
           () => deleteAdSet(id),
           (_, d) => ({ ...d, adSets: d.adSets.filter((a) => a.id !== id) }),
+        );
+      },
+
+      addTodo: (text) =>
+        write(
+          () => createTodo(text),
+          (todo, d) => ({ ...d, todos: [...d.todos, todo] }),
+        ),
+
+      toggleTodo: async (id, done) => {
+        await write(
+          () => setTodoDone(id, done),
+          (todo, d) => ({ ...d, todos: d.todos.map((t) => (t.id === todo.id ? todo : t)) }),
+        );
+      },
+
+      removeTodo: async (id) => {
+        await write(
+          () => deleteTodo(id),
+          (_, d) => ({ ...d, todos: d.todos.filter((t) => t.id !== id) }),
         );
       },
 
