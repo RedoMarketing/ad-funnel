@@ -8,7 +8,6 @@ import { CAMPAIGN_STATUSES, type AdSet, type CampaignStatus } from "@/lib/types"
 import { dialogKeyDown } from "@/lib/form-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoneyInput } from "@/components/money-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -128,7 +127,12 @@ export function AdSetDialog({
                 <Label htmlFor="adset-budget">
                   Budget <span className="text-muted-foreground">(optional)</span>
                 </Label>
-                <MoneyInput id="adset-budget" value={budget} onChange={setBudget} />
+                <Input
+                  id="adset-budget"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  placeholder="$250 / day"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="adset-status">Status</Label>
