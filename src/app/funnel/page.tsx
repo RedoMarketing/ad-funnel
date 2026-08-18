@@ -78,37 +78,27 @@ export default function FunnelPage() {
     [data],
   );
 
-  /**
-   * One card per ad set, since that is the level a creative actually runs at.
-   * A campaign with no ad sets still gets a card, named after itself, so
-   * nothing silently drops out of the funnel.
-   */
-  const cardsFor = React.useCallback(
+  /** One card per campaign. */
+  const cardFor = React.useCallback(
     (c: Campaign) => {
       const product = lookup.products.get(c.productId);
       const cloud = product ? lookup.clouds.get(product.cloudId) : undefined;
-      const platform = lookup.platforms.get(c.platformId);
-      const adSets = data.adSets.filter((a) => a.campaignId === c.id);
-
-      const base = {
+      return {
+        key: c.id,
         productName: product?.name ?? "Unknown product",
-        platformName: platform?.name ?? "Unknown platform",
+        platformName: lookup.platforms.get(c.platformId)?.name ?? "Unknown platform",
+        detail: c.name,
         objective: c.objective,
         cloudSlug: cloud?.slug,
-        campaignName: c.name,
       };
-
-      return adSets.length > 0
-        ? adSets.map((a) => ({ ...base, key: a.id, detail: a.name }))
-        : [{ ...base, key: c.id, detail: c.name }];
     },
-    [lookup, data.adSets],
+    [lookup],
   );
 
   const bands = STAGE_ORDER.map((stage) => ({
     stage,
     meta: FUNNEL_STAGES.find((s) => s.value === stage)!,
-    items: data.campaigns.filter((c) => c.stage === stage).flatMap(cardsFor),
+    items: data.campaigns.filter((c) => c.stage === stage).map(cardFor),
   })).filter((b) => b.stage !== "retention" || b.items.length > 0);
 
   if (error) {
