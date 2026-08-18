@@ -13,6 +13,12 @@ import {
   type FunnelStage,
 } from "@/lib/types";
 import { dialogKeyDown } from "@/lib/form-keys";
+import {
+  CAMPAIGN_TYPES,
+  OBJECTIVES,
+  isCampaignToken,
+  isObjectiveToken,
+} from "@/lib/nomenclature";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +26,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -143,14 +151,35 @@ export function CampaignDialog({
 
           <div className="space-y-4 py-5">
             <div className="space-y-2">
-              <Label htmlFor="campaign-name">Campaign name</Label>
-              <Input
-                id="campaign-name"
-                autoFocus
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Q3 Prospecting / Broad"
-              />
+              <Label htmlFor="campaign-type">Campaign type</Label>
+              <Select value={name} onValueChange={setName}>
+                <SelectTrigger id="campaign-type" className="w-full">
+                  <SelectValue placeholder="Pick a campaign type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/*
+                    A stored value predating the nomenclature (or renamed since)
+                    is offered too, so opening this dialog cannot silently blank
+                    a campaign that is already saved.
+                  */}
+                  {name && !isCampaignToken(name) && (
+                    <SelectGroup>
+                      <SelectLabel>Current</SelectLabel>
+                      <SelectItem value={name}>{name}</SelectItem>
+                    </SelectGroup>
+                  )}
+                  {CAMPAIGN_TYPES.map((family) => (
+                    <SelectGroup key={family.family}>
+                      <SelectLabel>{family.family}</SelectLabel>
+                      {family.tokens.map((t) => (
+                        <SelectItem key={`${family.family}-${t.token}`} value={t.token}>
+                          {t.token}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -220,12 +249,24 @@ export function CampaignDialog({
                 <Label htmlFor="campaign-objective">
                   Objective <span className="text-muted-foreground">(optional)</span>
                 </Label>
-                <Input
-                  id="campaign-objective"
-                  value={objective}
-                  onChange={(e) => setObjective(e.target.value)}
-                  placeholder="Leads, Demo, Traffic…"
-                />
+                <Select value={objective} onValueChange={setObjective}>
+                  <SelectTrigger id="campaign-objective" className="w-full">
+                    <SelectValue placeholder="Pick one" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {objective && !isObjectiveToken(objective) && (
+                      <SelectGroup>
+                        <SelectLabel>Current</SelectLabel>
+                        <SelectItem value={objective}>{objective}</SelectItem>
+                      </SelectGroup>
+                    )}
+                    {OBJECTIVES.map((t) => (
+                      <SelectItem key={t.token} value={t.token}>
+                        {t.token}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="campaign-budget">

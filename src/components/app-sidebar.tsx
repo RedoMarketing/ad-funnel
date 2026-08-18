@@ -11,7 +11,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuBadge,
@@ -43,7 +42,6 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Clouds</SidebarGroupLabel>
           <SidebarMenu>
             {!ready
               ? [0, 1, 2, 3, 4, 5].map((i) => (

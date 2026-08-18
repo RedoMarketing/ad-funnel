@@ -4,7 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
+import Image from "next/image";
 import { platformIcon } from "@/lib/platform-icons";
+import { platformLogo } from "@/lib/platform-logos";
 import { FUNNEL_STAGES, type Campaign, type FunnelStage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -17,21 +19,30 @@ const STAGE_ORDER: FunnelStage[] = ["awareness", "consideration", "conversion", 
 const WIDTHS = ["100%", "82%", "64%", "46%"];
 
 /**
- * The brand mark where one exists, initials otherwise. Marks carry their
- * brand colour, except the few whose colour would disappear against a light
- * or dark ground — those inherit currentColor instead.
+ * The brand mark alone where one exists — it identifies the platform without
+ * repeating the name beside it. Platforms with no mark (LinkedIn, Microsoft)
+ * show their name instead, since initials alone would not read.
  */
-function PlatformMark({ name }: { name: string }) {
+function PlatformBadge({ name }: { name: string }) {
+  // A supplied brand logo wins: simple-icons is single-colour, which misreads
+  // for marks that are genuinely multi-colour.
+  const logo = platformLogo(name);
+  if (logo) {
+    return <Image src={logo} alt={name} className="size-4 shrink-0" unoptimized />;
+  }
+
   const icon = platformIcon(name);
 
   if (icon) {
     return (
       <svg
         viewBox="0 0 24 24"
-        aria-hidden
-        className={icon.color ? "size-3.5 shrink-0" : "text-muted-foreground size-3.5 shrink-0"}
+        role="img"
+        aria-label={name}
+        className="size-4 shrink-0"
         fill={icon.color ?? "currentColor"}
       >
+        <title>{name}</title>
         <path d={icon.path} />
       </svg>
     );
@@ -47,8 +58,8 @@ function PlatformMark({ name }: { name: string }) {
 
   return (
     <span
-      aria-hidden
-      className="bg-muted text-muted-foreground grid size-3.5 shrink-0 place-items-center rounded-sm text-[8px] font-semibold"
+      title={name}
+      className="bg-muted text-muted-foreground grid size-4 shrink-0 place-items-center rounded-sm text-[8px] font-semibold"
     >
       {initials}
     </span>
@@ -158,19 +169,19 @@ export default function FunnelPage() {
                     <li key={item.key}>
                       <Link
                         href={item.cloudSlug ? `/cloud/${item.cloudSlug}` : "/"}
-                        className="bg-background hover:border-ring/60 block rounded-md border px-2.5 py-1.5 transition-colors"
+                        className="bg-background hover:border-ring/60 flex items-start gap-2 rounded-md border px-2.5 py-2 transition-colors"
                       >
-                        <span className="block text-xs font-medium">{item.productName}</span>
-
-                        <span className="mt-1 flex items-center gap-1.5">
-                          <PlatformMark name={item.platformName} />
-                          <span className="text-muted-foreground text-[11px]">
-                            {item.platformName}
-                          </span>
+                        <span className="mt-px">
+                          <PlatformBadge name={item.platformName} />
                         </span>
 
-                        <span className="text-muted-foreground mt-0.5 block text-[11px]">
-                          {[item.detail, item.objective].filter(Boolean).join(" · ")}
+                        <span className="min-w-0">
+                          <span className="block text-xs leading-tight font-medium">
+                            {item.productName}
+                          </span>
+                          <span className="text-muted-foreground mt-0.5 block text-[11px] leading-tight">
+                            {[item.detail, item.objective].filter(Boolean).join(" · ")}
+                          </span>
                         </span>
                       </Link>
                     </li>
