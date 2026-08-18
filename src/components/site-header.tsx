@@ -30,6 +30,15 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="!h-5" />
 
         <nav className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto">
+          <Button
+            asChild
+            variant={pathname === "/funnel" ? "secondary" : "ghost"}
+            size="sm"
+            className="shrink-0 font-normal"
+          >
+            <Link href="/funnel">Funnel</Link>
+          </Button>
+
           {data.clouds.map((cloud) => {
             const href = `/cloud/${cloud.slug}`;
             return (

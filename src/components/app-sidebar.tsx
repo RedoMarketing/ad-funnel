@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, LogOut } from "lucide-react";
+import { Filter, House, LogOut } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { haptic } from "@/lib/haptics";
@@ -42,6 +42,19 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname === "/funnel"} tooltip="Funnel">
+                <Link href="/funnel" onClick={haptic}>
+                  <Filter />
+                  <span>Funnel</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>Clouds</SidebarGroupLabel>
           <SidebarMenu>

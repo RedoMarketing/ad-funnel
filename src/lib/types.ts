@@ -92,10 +92,15 @@ export interface CampaignInput {
   notes?: string;
 }
 
+/**
+ * Labels only. The stored values stay as they are, so "conversion" is the
+ * column in Supabase while "Decision" is what it is called on screen — which
+ * also stops it reading as the Conversion cloud.
+ */
 export const FUNNEL_STAGES: { value: FunnelStage; label: string; short: string }[] = [
-  { value: "awareness", label: "Awareness", short: "TOF" },
-  { value: "consideration", label: "Consideration", short: "MOF" },
-  { value: "conversion", label: "Conversion", short: "BOF" },
+  { value: "awareness", label: "Awareness", short: "TOFU" },
+  { value: "consideration", label: "Consideration", short: "MOFU" },
+  { value: "conversion", label: "Decision", short: "BOFU" },
   { value: "retention", label: "Retention", short: "RET" },
 ];
 
