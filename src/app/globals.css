@@ -204,6 +204,26 @@
     animation-delay: calc(var(--i, 0) * 40ms);
   }
 
+  /*
+   * Creative tiles drift so a wall of them feels alive. Duration and delay
+   * vary per tile from its index, so they never move in lockstep, and the
+   * drift lives on a wrapper — the magnification writes transform on the
+   * child, and one element cannot hold both.
+   */
+  .float-tile {
+    animation: tile-drift var(--float-duration, 6s) ease-in-out var(--float-delay, 0s) infinite;
+  }
+
+  @keyframes tile-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, calc(var(--float-distance, 3px) * -1), 0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
