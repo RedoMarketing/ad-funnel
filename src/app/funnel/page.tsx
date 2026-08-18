@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { platformIconPath } from "@/lib/platform-icons";
 import { FUNNEL_STAGES, type Campaign, type FunnelStage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -15,8 +16,26 @@ const STAGE_ORDER: FunnelStage[] = ["awareness", "consideration", "conversion", 
 /** Each band narrows, so the stack reads as a funnel rather than a list. */
 const WIDTHS = ["100%", "82%", "64%", "46%"];
 
-/** Initials in place of a brand logo — no licensed marks are bundled. */
+/**
+ * The brand mark where one exists, initials otherwise. Drawn in currentColor
+ * rather than brand colours, to hold the monochrome palette.
+ */
 function PlatformMark({ name }: { name: string }) {
+  const path = platformIconPath(name);
+
+  if (path) {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden
+        className="text-muted-foreground size-3.5 shrink-0"
+        fill="currentColor"
+      >
+        <path d={path} />
+      </svg>
+    );
+  }
+
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -28,7 +47,7 @@ function PlatformMark({ name }: { name: string }) {
   return (
     <span
       aria-hidden
-      className="bg-muted text-muted-foreground grid size-4 shrink-0 place-items-center rounded-sm text-[8px] font-semibold"
+      className="bg-muted text-muted-foreground grid size-3.5 shrink-0 place-items-center rounded-sm text-[8px] font-semibold"
     >
       {initials}
     </span>
