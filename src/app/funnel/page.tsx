@@ -151,15 +151,7 @@ export default function FunnelPage() {
               className="thread-in bg-muted/40 mx-auto rounded-xl border px-4 py-3"
               style={{ width: WIDTHS[i] ?? "40%", "--i": i } as React.CSSProperties}
             >
-              <div className="flex items-baseline justify-center gap-2">
-                <h2 className="text-sm font-semibold">{band.meta.label}</h2>
-                <span className="text-muted-foreground font-mono text-[10px]">
-                  {band.meta.short}
-                </span>
-                <span className="text-muted-foreground text-xs tabular-nums">
-                  {band.items.length}
-                </span>
-              </div>
+              <h2 className="text-center text-sm font-semibold">{band.meta.label}</h2>
 
               {band.items.length === 0 ? (
                 <p className="text-muted-foreground mt-2 text-center text-xs">Nothing at this stage</p>
