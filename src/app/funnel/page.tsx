@@ -11,6 +11,7 @@ import { FUNNEL_STAGES, type Campaign, type FunnelStage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 /** Top of funnel down to bottom. */
 const STAGE_ORDER: FunnelStage[] = ["awareness", "consideration", "conversion", "retention"];
@@ -66,8 +67,11 @@ function PlatformBadge({ name }: { name: string }) {
   );
 }
 
+type View = "campaigns" | "ads";
+
 export default function FunnelPage() {
   const { data, ready, error, refresh } = useStore();
+  const [view, setView] = React.useState<View>("campaigns");
 
   const lookup = React.useMemo(
     () => ({
@@ -95,11 +99,41 @@ export default function FunnelPage() {
     [lookup],
   );
 
-  const bands = STAGE_ORDER.map((stage) => ({
-    stage,
-    meta: FUNNEL_STAGES.find((s) => s.value === stage)!,
-    items: data.campaigns.filter((c) => c.stage === stage).map(cardFor),
-  })).filter((b) => b.stage !== "retention" || b.items.length > 0);
+  /** Ads view: every creative running at this stage, via its ad set. */
+  const adsFor = React.useCallback(
+    (c: Campaign) => {
+      const product = lookup.products.get(c.productId);
+      const cloud = product ? lookup.clouds.get(product.cloudId) : undefined;
+      const platformName = lookup.platforms.get(c.platformId)?.name ?? "Unknown platform";
+
+      return data.adSets
+        .filter((a) => a.campaignId === c.id)
+        .flatMap((adSet) =>
+          data.creatives
+            .filter((cr) => cr.adSetId === adSet.id)
+            .map((cr) => ({
+              key: cr.id,
+              url: cr.url,
+              name: cr.name,
+              productName: product?.name ?? "Unknown product",
+              platformName,
+              detail: `${c.name} · ${adSet.name}`,
+              cloudSlug: cloud?.slug,
+            })),
+        );
+    },
+    [lookup, data.adSets, data.creatives],
+  );
+
+  const bands = STAGE_ORDER.map((stage) => {
+    const campaigns = data.campaigns.filter((c) => c.stage === stage);
+    return {
+      stage,
+      meta: FUNNEL_STAGES.find((s) => s.value === stage)!,
+      items: campaigns.map(cardFor),
+      ads: campaigns.flatMap(adsFor),
+    };
+  }).filter((b) => b.stage !== "retention" || b.items.length > 0);
 
   if (error) {
     return (
@@ -120,11 +154,28 @@ export default function FunnelPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      <header className="border-b pb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Funnel</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm">
-          Every campaign across all clouds, by the stage it works on.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4 border-b pb-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Funnel</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm">
+            {view === "campaigns"
+              ? "Every campaign across all clouds, by the stage it works on."
+              : "Every ad creative that is live, by the stage it runs at."}
+          </p>
+        </div>
+
+        <ToggleGroup
+          type="single"
+          value={view}
+          // A group with nothing selected would leave the page blank.
+          onValueChange={(v) => v && setView(v as View)}
+          variant="outline"
+          size="sm"
+          aria-label="Show the funnel by"
+        >
+          <ToggleGroupItem value="campaigns">Campaigns</ToggleGroupItem>
+          <ToggleGroupItem value="ads">Ads</ToggleGroupItem>
+        </ToggleGroup>
       </header>
 
       {!ready ? (
@@ -143,8 +194,49 @@ export default function FunnelPage() {
             >
               <h2 className="text-center text-sm font-semibold">{band.meta.label}</h2>
 
-              {band.items.length === 0 ? (
-                <p className="text-muted-foreground mt-2 text-center text-xs">Nothing at this stage</p>
+              {view === "ads" ? (
+                band.ads.length === 0 ? (
+                  <p className="text-muted-foreground mt-2 text-center text-xs">
+                    No ads uploaded at this stage
+                  </p>
+                ) : (
+                  <ul className="mt-2 flex flex-wrap justify-center gap-1.5">
+                    {band.ads.map((ad) => (
+                      <li key={ad.key}>
+                        <Link
+                          href={ad.cloudSlug ? `/cloud/${ad.cloudSlug}` : "/"}
+                          className="bg-background hover:border-ring/60 flex w-36 flex-col gap-1.5 rounded-md border p-1.5 transition-colors"
+                        >
+                          {/* Signed Supabase URLs, so next/image optimisation is not in play. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={ad.url}
+                            alt={ad.name}
+                            loading="lazy"
+                            className="bg-muted aspect-square w-full rounded object-cover"
+                          />
+                          <span className="flex items-start gap-1.5 px-0.5">
+                            <span className="mt-px">
+                              <PlatformBadge name={ad.platformName} />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-[11px] leading-tight font-medium">
+                                {ad.productName}
+                              </span>
+                              <span className="text-muted-foreground block text-[10px] leading-tight">
+                                {ad.detail}
+                              </span>
+                            </span>
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : band.items.length === 0 ? (
+                <p className="text-muted-foreground mt-2 text-center text-xs">
+                  Nothing at this stage
+                </p>
               ) : (
                 <ul className="mt-2 flex flex-wrap justify-center gap-1.5">
                   {band.items.map((item) => (
@@ -170,6 +262,7 @@ export default function FunnelPage() {
                   ))}
                 </ul>
               )}
+
             </section>
           ))}
         </div>
