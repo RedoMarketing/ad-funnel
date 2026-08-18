@@ -22,12 +22,18 @@ export interface GalleryItem {
   cloudSlug?: string;
 }
 
-/** Growth is capped below the hex spacing ratio so tiles never touch. */
-const MAX_GROWTH = 0.45;
-const SPACING_RATIO = 1.55;
-const REACH = 170;
-/** Outer rings shrink toward this fraction, the Apple Watch falloff. */
-const EDGE_SCALE = 0.62;
+/**
+ * Circles pack tighter than squares: two of them clear each other whenever
+ * the centres are further apart than the sum of their radii, with no corners
+ * to catch. That buys the close honeycomb spacing, and the budget still has
+ * to hold — the widest pair (centre against ring one) grown by MAX_GROWTH
+ * must stay inside SPACING_RATIO.
+ */
+const MAX_GROWTH = 0.28;
+const SPACING_RATIO = 1.3;
+const REACH = 150;
+/** Outer rings shrink hard toward this fraction, as on the watch face. */
+const EDGE_SCALE = 0.35;
 
 /** Six axial steps around a hex ring. */
 const HEX_DIRS: [number, number][] = [
@@ -240,7 +246,7 @@ export function CreativeGallery({
               data-tile
               onClick={() => setOpen(item)}
               aria-label={`${item.productName} — ${item.detail}`}
-              className="group focus-visible:ring-ring/50 relative block size-full origin-center overflow-hidden rounded-md shadow-sm transition-[transform,box-shadow] duration-200 ease-out hover:shadow-lg focus-visible:ring-[3px] focus-visible:outline-none"
+              className="group focus-visible:ring-ring/50 relative block size-full origin-center overflow-hidden rounded-full shadow-sm transition-[transform,box-shadow] duration-200 ease-out hover:shadow-lg focus-visible:ring-[3px] focus-visible:outline-none"
             >
               {/* Signed Supabase URLs, so next/image optimisation is not in play. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -252,16 +258,13 @@ export function CreativeGallery({
                 className="bg-muted size-full object-cover"
               />
 
-              {/* Held back until the tile has grown enough to read. */}
-              <span className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/85 via-black/30 to-transparent p-1 text-left opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-                <span className="flex items-center gap-1">
-                  <span className="[&_*]:!text-white">{renderMark(item.platformName)}</span>
-                  <span className="truncate text-[8px] leading-tight font-medium text-white">
-                    {item.productName}
-                  </span>
-                </span>
-                <span className="mt-0.5 line-clamp-2 text-[7px] leading-tight text-white/80">
-                  {item.detail}
+              {/*
+                A circle this small cannot hold a caption, so the hover state
+                names the product only; the rest is in the dialog on click.
+              */}
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/65 p-1 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span className="line-clamp-3 text-[8px] leading-tight font-medium text-white">
+                  {item.productName}
                 </span>
               </span>
             </button>

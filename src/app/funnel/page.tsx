@@ -219,21 +219,19 @@ export default function FunnelPage() {
                 <ul className="mt-2 flex flex-wrap justify-center gap-1.5">
                   {band.items.map((item) => (
                     <li key={item.key}>
+                      {/*
+                        No border or fill: the band is already a container, and
+                        a second box inside it just doubled the framing. One
+                        line, with the surface appearing only on hover.
+                      */}
                       <Link
                         href={item.cloudSlug ? `/cloud/${item.cloudSlug}` : "/"}
-                        className="bg-background hover:border-ring/60 flex items-start gap-2 rounded-md border px-2.5 py-2 transition-colors"
+                        className="hover:bg-background flex items-center gap-2 rounded-md px-2 py-1.5 whitespace-nowrap transition-colors"
                       >
-                        <span className="mt-px">
-                          <PlatformBadge name={item.platformName} />
-                        </span>
-
-                        <span className="min-w-0">
-                          <span className="block text-xs leading-tight font-medium">
-                            {item.productName}
-                          </span>
-                          <span className="text-muted-foreground mt-0.5 block text-[11px] leading-tight">
-                            {[item.detail, item.objective].filter(Boolean).join(" · ")}
-                          </span>
+                        <PlatformBadge name={item.platformName} />
+                        <span className="text-xs font-medium">{item.productName}</span>
+                        <span className="text-muted-foreground text-[11px]">
+                          {[item.detail, item.objective].filter(Boolean).join(" · ")}
                         </span>
                       </Link>
                     </li>
