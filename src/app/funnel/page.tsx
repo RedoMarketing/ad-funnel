@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { CreativeGallery } from "@/components/creative-gallery";
 
 /** Top of funnel down to bottom. */
 const STAGE_ORDER: FunnelStage[] = ["awareness", "consideration", "conversion", "retention"];
@@ -190,7 +191,12 @@ export default function FunnelPage() {
             <section
               key={band.stage}
               className="thread-in bg-muted/40 mx-auto rounded-xl border px-4 py-3"
-              style={{ width: WIDTHS[i] ?? "40%", "--i": i } as React.CSSProperties}
+              style={
+                {
+                  width: view === "ads" ? "100%" : (WIDTHS[i] ?? "40%"),
+                  "--i": i,
+                } as React.CSSProperties
+              }
             >
               <h2 className="text-center text-sm font-semibold">{band.meta.label}</h2>
 
@@ -200,38 +206,10 @@ export default function FunnelPage() {
                     No ads uploaded at this stage
                   </p>
                 ) : (
-                  <ul className="mt-2 flex flex-wrap justify-center gap-1.5">
-                    {band.ads.map((ad) => (
-                      <li key={ad.key}>
-                        <Link
-                          href={ad.cloudSlug ? `/cloud/${ad.cloudSlug}` : "/"}
-                          className="bg-background hover:border-ring/60 flex w-36 flex-col gap-1.5 rounded-md border p-1.5 transition-colors"
-                        >
-                          {/* Signed Supabase URLs, so next/image optimisation is not in play. */}
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={ad.url}
-                            alt={ad.name}
-                            loading="lazy"
-                            className="bg-muted aspect-square w-full rounded object-cover"
-                          />
-                          <span className="flex items-start gap-1.5 px-0.5">
-                            <span className="mt-px">
-                              <PlatformBadge name={ad.platformName} />
-                            </span>
-                            <span className="min-w-0">
-                              <span className="block text-[11px] leading-tight font-medium">
-                                {ad.productName}
-                              </span>
-                              <span className="text-muted-foreground block text-[10px] leading-tight">
-                                {ad.detail}
-                              </span>
-                            </span>
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                  <CreativeGallery
+                    items={band.ads}
+                    renderMark={(platformName) => <PlatformBadge name={platformName} />}
+                  />
                 )
               ) : band.items.length === 0 ? (
                 <p className="text-muted-foreground mt-2 text-center text-xs">
