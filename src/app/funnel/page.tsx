@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { platformIconPath } from "@/lib/platform-icons";
+import { platformIcon } from "@/lib/platform-icons";
 import { FUNNEL_STAGES, type Campaign, type FunnelStage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -17,21 +17,22 @@ const STAGE_ORDER: FunnelStage[] = ["awareness", "consideration", "conversion", 
 const WIDTHS = ["100%", "82%", "64%", "46%"];
 
 /**
- * The brand mark where one exists, initials otherwise. Drawn in currentColor
- * rather than brand colours, to hold the monochrome palette.
+ * The brand mark where one exists, initials otherwise. Marks carry their
+ * brand colour, except the few whose colour would disappear against a light
+ * or dark ground — those inherit currentColor instead.
  */
 function PlatformMark({ name }: { name: string }) {
-  const path = platformIconPath(name);
+  const icon = platformIcon(name);
 
-  if (path) {
+  if (icon) {
     return (
       <svg
         viewBox="0 0 24 24"
         aria-hidden
-        className="text-muted-foreground size-3.5 shrink-0"
-        fill="currentColor"
+        className={icon.color ? "size-3.5 shrink-0" : "text-muted-foreground size-3.5 shrink-0"}
+        fill={icon.color ?? "currentColor"}
       >
-        <path d={path} />
+        <path d={icon.path} />
       </svg>
     );
   }

@@ -20,10 +20,22 @@ const WANT = [
   ["amazon", "Amazon"], ["spotify", "Spotify"],
 ];
 
+// Brand colours that vanish against a light or dark ground are dropped, so
+// those marks inherit currentColor and stay visible in both themes.
+function usableColor(hex) {
+  const n = parseInt(hex, 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.06 && luminance < 0.75;
+}
+
 const entries = [];
 for (const [key, title] of WANT) {
   const icon = byTitle.get(title.toLowerCase());
-  if (icon) entries.push([key, icon.path]);
+  if (icon) entries.push([key, icon.path, usableColor(icon.hex) ? `#${icon.hex}` : null]);
   else console.error(`no icon for ${title}`);
 }
 
@@ -35,12 +47,21 @@ console.log(`// Generated from simple-icons. Only the marks actually needed are
 //
 // Regenerate: node scripts/gen-platform-icons.js > src/lib/platform-icons.ts
 
-/** Lowercased platform name -> SVG path data on a 24x24 viewBox. */
-export const PLATFORM_ICON_PATHS: Record<string, string> = {`);
-for (const [k, p] of entries) console.log(`  ${JSON.stringify(k)}: ${JSON.stringify(p)},`);
+export interface PlatformIcon {
+  /** SVG path data on a 24x24 viewBox. */
+  path: string;
+  /** Brand colour, or null where it would disappear against the background. */
+  color: string | null;
+}
+
+/** Lowercased platform name -> its mark. */
+export const PLATFORM_ICONS: Record<string, PlatformIcon> = {`);
+for (const [k, p, c] of entries) {
+  console.log(`  ${JSON.stringify(k)}: { path: ${JSON.stringify(p)}, color: ${c ? JSON.stringify(c) : "null"} },`);
+}
 console.log(`};
 
 /** Matches a platform name to a mark, tolerating case and stray spacing. */
-export function platformIconPath(name: string): string | undefined {
-  return PLATFORM_ICON_PATHS[name.trim().toLowerCase()];
+export function platformIcon(name: string): PlatformIcon | undefined {
+  return PLATFORM_ICONS[name.trim().toLowerCase()];
 }`);
