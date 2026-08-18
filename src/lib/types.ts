@@ -55,6 +55,15 @@ export interface AdSetInput {
   status: CampaignStatus;
 }
 
+export interface Creative {
+  id: string;
+  adSetId: string;
+  path: string;
+  name: string;
+  /** Short-lived signed URL; the bucket is private. */
+  url: string;
+}
+
 export interface Todo {
   id: string;
   text: string;
@@ -68,6 +77,7 @@ export interface FunnelData {
   platforms: Platform[];
   campaigns: Campaign[];
   adSets: AdSet[];
+  creatives: Creative[];
   todos: Todo[];
 }
 
@@ -77,6 +87,7 @@ export const EMPTY_FUNNEL: FunnelData = {
   platforms: [],
   campaigns: [],
   adSets: [],
+  creatives: [],
   todos: [],
 };
 

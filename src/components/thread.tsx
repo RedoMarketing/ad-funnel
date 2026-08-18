@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AdSetDialog } from "@/components/ad-set-dialog";
+import { CreativeStrip } from "@/components/creative-strip";
 import { CampaignDialog } from "@/components/campaign-dialog";
 import { ProductDialog } from "@/components/product-dialog";
 
@@ -83,6 +84,8 @@ function AdSetRow({ adSet, campaignName }: { adSet: AdSet; campaignName: string 
             </p>
           )}
         </div>
+
+        <CreativeStrip adSetId={adSet.id} adSetName={adSet.name} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { FUNNEL_STAGES, type Campaign, type FunnelStage } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,6 +14,26 @@ const STAGE_ORDER: FunnelStage[] = ["awareness", "consideration", "conversion", 
 
 /** Each band narrows, so the stack reads as a funnel rather than a list. */
 const WIDTHS = ["100%", "82%", "64%", "46%"];
+
+/** Initials in place of a brand logo — no licensed marks are bundled. */
+function PlatformMark({ name }: { name: string }) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <span
+      aria-hidden
+      className="bg-muted text-muted-foreground grid size-4 shrink-0 place-items-center rounded-sm text-[8px] font-semibold"
+    >
+      {initials}
+    </span>
+  );
+}
 
 export default function FunnelPage() {
   const { data, ready, error, refresh } = useStore();
@@ -28,22 +47,37 @@ export default function FunnelPage() {
     [data],
   );
 
-  /** Cloud, platform, campaign, objective — the whole path in one line. */
-  const label = React.useCallback(
+  /**
+   * One card per ad set, since that is the level a creative actually runs at.
+   * A campaign with no ad sets still gets a card, named after itself, so
+   * nothing silently drops out of the funnel.
+   */
+  const cardsFor = React.useCallback(
     (c: Campaign) => {
       const product = lookup.products.get(c.productId);
       const cloud = product ? lookup.clouds.get(product.cloudId) : undefined;
       const platform = lookup.platforms.get(c.platformId);
-      const parts = [cloud?.name, platform?.name, c.name, c.objective].filter(Boolean);
-      return { parts, cloudSlug: cloud?.slug };
+      const adSets = data.adSets.filter((a) => a.campaignId === c.id);
+
+      const base = {
+        productName: product?.name ?? "Unknown product",
+        platformName: platform?.name ?? "Unknown platform",
+        objective: c.objective,
+        cloudSlug: cloud?.slug,
+        campaignName: c.name,
+      };
+
+      return adSets.length > 0
+        ? adSets.map((a) => ({ ...base, key: a.id, detail: a.name }))
+        : [{ ...base, key: c.id, detail: c.name }];
     },
-    [lookup],
+    [lookup, data.adSets],
   );
 
   const bands = STAGE_ORDER.map((stage) => ({
     stage,
     meta: FUNNEL_STAGES.find((s) => s.value === stage)!,
-    items: data.campaigns.filter((c) => c.stage === stage),
+    items: data.campaigns.filter((c) => c.stage === stage).flatMap(cardsFor),
   })).filter((b) => b.stage !== "retention" || b.items.length > 0);
 
   if (error) {
@@ -86,36 +120,41 @@ export default function FunnelPage() {
               className="thread-in bg-muted/40 mx-auto rounded-xl border px-4 py-3"
               style={{ width: WIDTHS[i] ?? "40%", "--i": i } as React.CSSProperties}
             >
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline justify-center gap-2">
                 <h2 className="text-sm font-semibold">{band.meta.label}</h2>
                 <span className="text-muted-foreground font-mono text-[10px]">
                   {band.meta.short}
                 </span>
-                <span className="text-muted-foreground ml-auto text-xs tabular-nums">
+                <span className="text-muted-foreground text-xs tabular-nums">
                   {band.items.length}
                 </span>
               </div>
 
               {band.items.length === 0 ? (
-                <p className="text-muted-foreground mt-2 text-xs">Nothing at this stage</p>
+                <p className="text-muted-foreground mt-2 text-center text-xs">Nothing at this stage</p>
               ) : (
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {band.items.map((c) => {
-                    const { parts, cloudSlug } = label(c);
-                    return (
-                      <li key={c.id}>
-                        <Link
-                          href={cloudSlug ? `/cloud/${cloudSlug}` : "/"}
-                          className={cn(
-                            "bg-background hover:border-ring/60 inline-flex items-center rounded-md border px-2 py-1 text-xs whitespace-nowrap transition-colors",
-                            c.status !== "active" && "text-muted-foreground",
-                          )}
-                        >
-                          {parts.join(" · ")}
-                        </Link>
-                      </li>
-                    );
-                  })}
+                <ul className="mt-2 flex flex-wrap justify-center gap-1.5">
+                  {band.items.map((item) => (
+                    <li key={item.key}>
+                      <Link
+                        href={item.cloudSlug ? `/cloud/${item.cloudSlug}` : "/"}
+                        className="bg-background hover:border-ring/60 block rounded-md border px-2.5 py-1.5 transition-colors"
+                      >
+                        <span className="block text-xs font-medium">{item.productName}</span>
+
+                        <span className="mt-1 flex items-center gap-1.5">
+                          <PlatformMark name={item.platformName} />
+                          <span className="text-muted-foreground text-[11px]">
+                            {item.platformName}
+                          </span>
+                        </span>
+
+                        <span className="text-muted-foreground mt-0.5 block text-[11px]">
+                          {[item.detail, item.objective].filter(Boolean).join(" · ")}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               )}
             </section>

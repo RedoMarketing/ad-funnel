@@ -34,7 +34,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild isActive={pathname === "/"} tooltip="All clouds">
               <Link href="/" onClick={haptic}>
                 <House />
-                <span className="font-semibold">Ad Funnel</span>
+                <span className="font-semibold">Ads</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -42,19 +42,6 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === "/funnel"} tooltip="Funnel">
-                <Link href="/funnel" onClick={haptic}>
-                  <Filter />
-                  <span>Funnel</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
         <SidebarGroup>
           <SidebarGroupLabel>Clouds</SidebarGroupLabel>
           <SidebarMenu>
@@ -106,6 +93,14 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === "/funnel"} tooltip="Funnel">
+              <Link href="/funnel" onClick={haptic}>
+                <Filter />
+                <span>Funnel</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={() => void signOut()} tooltip={email ?? "Sign out"}>
               <LogOut />

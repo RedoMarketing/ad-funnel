@@ -26,6 +26,7 @@ import type {
   Campaign,
   CampaignInput,
   Cloud,
+  Creative,
   FunnelData,
   Platform,
   Product,
@@ -132,7 +133,7 @@ const campaignColumns = (input: CampaignInput) => ({
 export async function fetchFunnel(): Promise<FunnelData> {
   const db = supabaseAdmin();
 
-  const [clouds, products, platforms, campaigns, adSets, todos] = await Promise.all([
+  const [clouds, products, platforms, campaigns, adSets, todos, creatives] = await Promise.all([
     db.from("funnel_clouds").select("*").order("sort_order"),
     db.from("funnel_products").select("*").order("created_at"),
     db.from("funnel_platforms").select("*").order("name"),
@@ -140,9 +141,12 @@ export async function fetchFunnel(): Promise<FunnelData> {
     db.from("funnel_ad_sets").select("*").order("created_at"),
     // Open items first, newest last within each group.
     db.from("funnel_todos").select("*").order("done").order("created_at"),
+    db.from("funnel_creatives").select("*").order("created_at"),
   ]);
 
-  const failed = [clouds, products, platforms, campaigns, adSets, todos].find((r) => r.error);
+  const failed = [clouds, products, platforms, campaigns, adSets, todos, creatives].find(
+    (r) => r.error,
+  );
   if (failed?.error) throw new Error(failed.error.message);
 
   return {
@@ -152,6 +156,7 @@ export async function fetchFunnel(): Promise<FunnelData> {
     campaigns: (campaigns.data as CampaignRow[]).map(toCampaign),
     adSets: (adSets.data as AdSetRow[]).map(toAdSet),
     todos: (todos.data as TodoRow[]).map(toTodo),
+    creatives: await signCreatives((creatives.data ?? []) as CreativeRow[]),
   };
 }
 
@@ -326,4 +331,69 @@ export async function setTodoDone(id: string, done: boolean): Promise<Todo> {
 export async function deleteTodo(id: string): Promise<void> {
   const { error } = await supabaseAdmin().from("funnel_todos").delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+/* ---------------------------------------------------------------- */
+/* creatives                                                         */
+/* ---------------------------------------------------------------- */
+
+const BUCKET = "ad-creatives";
+
+type CreativeRow = { id: string; ad_set_id: string; path: string; name: string };
+
+/**
+ * The bucket is private, so every row needs a signed URL before it can be
+ * rendered. Signed in one batch rather than per image.
+ */
+async function signCreatives(rows: CreativeRow[]): Promise<Creative[]> {
+  if (rows.length === 0) return [];
+
+  const { data, error } = await supabaseAdmin()
+    .storage.from(BUCKET)
+    .createSignedUrls(
+      rows.map((r) => r.path),
+      60 * 60 * 8,
+    );
+  if (error) throw new Error(error.message);
+
+  const urls = new Map((data ?? []).map((d) => [d.path, d.signedUrl]));
+  return rows.map((r) => ({
+    id: r.id,
+    adSetId: r.ad_set_id,
+    path: r.path,
+    name: r.name,
+    url: urls.get(r.path) ?? "",
+  }));
+}
+
+export async function uploadCreative(adSetId: string, file: File): Promise<Creative> {
+  const db = supabaseAdmin();
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
+  const path = `${adSetId}/${crypto.randomUUID()}.${ext}`;
+
+  const { error: uploadError } = await db.storage
+    .from(BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data, error } = await db
+    .from("funnel_creatives")
+    .insert({ ad_set_id: adSetId, path, name: file.name })
+    .select()
+    .single();
+  if (error) {
+    // Don't leave an orphan file behind if the row fails.
+    await db.storage.from(BUCKET).remove([path]);
+    throw new Error(error.message);
+  }
+
+  const [signed] = await signCreatives([data as CreativeRow]);
+  return signed;
+}
+
+export async function deleteCreative(id: string, path: string): Promise<void> {
+  const db = supabaseAdmin();
+  const { error } = await db.from("funnel_creatives").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  await db.storage.from(BUCKET).remove([path]);
 }

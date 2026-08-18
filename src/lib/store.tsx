@@ -13,12 +13,14 @@ import {
   editAdSet,
   editCampaign,
   createTodo,
+  deleteCreative,
   deleteTodo,
   fetchFunnel,
   renameProduct,
   setTodoDone,
+  uploadCreative,
 } from "./db";
-import { EMPTY_FUNNEL, type AdSet, type AdSetInput, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product, type Todo } from "./types";
+import { EMPTY_FUNNEL, type AdSet, type AdSetInput, type Campaign, type CampaignInput, type Cloud, type FunnelData, type Platform, type Product, type Creative, type Todo } from "./types";
 
 interface StoreValue {
   data: FunnelData;
@@ -39,6 +41,8 @@ interface StoreValue {
   removeAdSet: (id: string) => Promise<void>;
   duplicateAdSet: (id: string) => Promise<void>;
   duplicateCampaign: (id: string) => Promise<void>;
+  addCreative: (adSetId: string, file: File) => Promise<Creative>;
+  removeCreative: (id: string, path: string) => Promise<void>;
   addTodo: (text: string) => Promise<Todo>;
   toggleTodo: (id: string, done: boolean) => Promise<void>;
   removeTodo: (id: string) => Promise<void>;
@@ -257,6 +261,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             (adSet, d) => ({ ...d, adSets: [...d.adSets, adSet] }),
           );
         }
+      },
+
+      addCreative: (adSetId, file) =>
+        write(
+          () => uploadCreative(adSetId, file),
+          (creative, d) => ({ ...d, creatives: [...d.creatives, creative] }),
+        ),
+
+      removeCreative: async (id, path) => {
+        await write(
+          () => deleteCreative(id, path),
+          (_, d) => ({ ...d, creatives: d.creatives.filter((c) => c.id !== id) }),
+        );
       },
 
       addTodo: (text) =>
